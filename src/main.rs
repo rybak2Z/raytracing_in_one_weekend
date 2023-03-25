@@ -10,13 +10,13 @@ fn main() -> io::Result<()> {
     let stdout = io::stdout().lock();
     let mut writer = BufWriter::new(stdout);
     writer.write_all(format!("{FILE_TYPE}\n{HEIGHT} {WIDTH}\n{MAX_COLOR}\n").as_bytes())?;
-    
+
     let stderr = io::stderr().lock();
     let mut writer_err = BufWriter::new(stderr);
 
     for row in (0..HEIGHT).rev() {
         writer_err.write_all(format!("\rScanlines remaining: {row}").as_bytes())?;
-        writer_err.flush()?; 
+        writer_err.flush()?;
 
         for col in 0..WIDTH {
             let r = col as f32 / (WIDTH - 1) as f32;
@@ -26,7 +26,7 @@ fn main() -> io::Result<()> {
             let r = (255.0 * r) as u32;
             let g = (255.0 * g) as u32;
             let b = (255.0 * b) as u32;
-            
+
             let output = format!("{r} {g} {b}\n");
             writer.write_all(output.as_bytes())?;
         }
