@@ -1,6 +1,8 @@
 use std::io::Write;
 use std::io::{self, BufWriter};
 
+use raytracing_in_one_weekend::vec3::Color;
+
 const WIDTH: u32 = 256;
 const HEIGHT: u32 = 256;
 const FILE_TYPE: &str = "P3";
@@ -19,16 +21,13 @@ fn main() -> io::Result<()> {
         writer_err.flush()?;
 
         for col in 0..WIDTH {
-            let r = col as f32 / (WIDTH - 1) as f32;
-            let g = row as f32 / (HEIGHT - 1) as f32;
-            let b: f32 = 0.25;
+            let pixel_color = Color::new(
+                col as f64 / (WIDTH - 1) as f64,
+                row as f64 / (HEIGHT - 1) as f64,
+                0.25,
+            );
 
-            let r = (255.0 * r) as u32;
-            let g = (255.0 * g) as u32;
-            let b = (255.0 * b) as u32;
-
-            let output = format!("{r} {g} {b}\n");
-            writer.write_all(output.as_bytes())?;
+            write_pixel(&mut writer, pixel_color)?;
         }
     }
 
@@ -38,4 +37,14 @@ fn main() -> io::Result<()> {
     writer_err.flush()?;
 
     Ok(())
+}
+
+fn write_pixel<W: Write>(writer: &mut W, pixel_color: Color) -> io::Result<()> {
+    write!(
+        writer,
+        "{} {} {}\n",
+        (255.0 * pixel_color.x()) as u32,
+        (255.0 * pixel_color.y()) as u32,
+        (255.0 * pixel_color.z()) as u32
+    )
 }
