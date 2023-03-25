@@ -9,10 +9,15 @@ const MAX_COLOR: u32 = 255;
 fn main() -> io::Result<()> {
     let stdout = io::stdout().lock();
     let mut writer = BufWriter::new(stdout);
-
     writer.write_all(format!("{FILE_TYPE}\n{HEIGHT} {WIDTH}\n{MAX_COLOR}\n").as_bytes())?;
+    
+    let stderr = io::stderr().lock();
+    let mut writer_err = BufWriter::new(stderr);
 
     for row in (0..HEIGHT).rev() {
+        writer_err.write_all(format!("\rScanlines remaining: {row}").as_bytes())?;
+        writer_err.flush()?; 
+
         for col in 0..WIDTH {
             let r = col as f32 / (WIDTH - 1) as f32;
             let g = row as f32 / (HEIGHT - 1) as f32;
@@ -28,6 +33,9 @@ fn main() -> io::Result<()> {
     }
 
     writer.flush()?;
+
+    writer_err.write_all(b"\nDone.\n")?;
+    writer_err.flush()?;
 
     Ok(())
 }
