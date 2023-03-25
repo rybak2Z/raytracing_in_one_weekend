@@ -51,15 +51,17 @@ fn render(
 }
 
 fn get_ray_color(ray: Ray) -> Color {
-    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Color::new(1.0, 0.0, 0.0);
+    let t = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray);
+    if t > 0.0 {
+        let normal = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0)).normalized();
+        return 0.5 * Color::new(normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0);
     }
     let direction = ray.direction().normalized();
     let t = 0.5 * (direction.y() + 1.0);
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
-fn hit_sphere(center: Point3, radius: f64, ray: Ray) -> bool {
+fn hit_sphere(center: Point3, radius: f64, ray: Ray) -> f64 {
     let co = ray.origin() - center;
 
     // Quadratic equation
@@ -68,5 +70,9 @@ fn hit_sphere(center: Point3, radius: f64, ray: Ray) -> bool {
     let c = Vec3::dot(&co, &co) - radius * radius;
     let discriminant = b * b - 4.0 * a * c;
 
-    discriminant > 0.0
+    if discriminant < 0.0 {
+        return -1.0;
+    }
+    
+    (-b - discriminant.sqrt()) / (2.0 * a)
 }
