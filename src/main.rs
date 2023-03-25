@@ -1,5 +1,5 @@
-use raytracing_in_one_weekend::vec3::{Color, Point3, Vec3};
 use raytracing_in_one_weekend::ray::Ray;
+use raytracing_in_one_weekend::vec3::{Color, Point3, Vec3};
 use raytracing_in_one_weekend::writing::*;
 
 // Image
@@ -21,11 +21,17 @@ const MAX_COLOR: u32 = 255;
 
 fn main() -> io::Result<()> {
     // Should be a constant but unable to evaluate at compile-time
-    let lower_left_corner = ORIGIN - HORIZONTAL / 2.0 - VERTICAL / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
-    
+    let lower_left_corner =
+        ORIGIN - HORIZONTAL / 2.0 - VERTICAL / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
+
     let (mut writer, mut writer_err) = get_writers();
-    write!(writer, "{FILE_TYPE}\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n{MAX_COLOR}\n")?;
+    write!(
+        writer,
+        "{FILE_TYPE}\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n{MAX_COLOR}\n"
+    )?;
+
     render(&mut writer, &mut writer_err, lower_left_corner)?;
+
     finish_writers(&mut writer, &mut writer_err)?;
 
     Ok(())
@@ -51,8 +57,8 @@ fn render(
 }
 
 fn get_ray_color(ray: Ray) -> Color {
-    let t = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray);
-    if t > 0.0 {
+    let hit = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray);
+    if let Hit::Some(t) = hit {
         let normal = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0)).normalized();
         return 0.5 * Color::new(normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0);
     }
@@ -61,7 +67,12 @@ fn get_ray_color(ray: Ray) -> Color {
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
-fn hit_sphere(center: Point3, radius: f64, ray: Ray) -> f64 {
+enum Hit {
+    Some(f64),
+    None,
+}
+
+fn hit_sphere(center: Point3, radius: f64, ray: Ray) -> Hit {
     let co = ray.origin() - center;
 
     // Quadratic equation
@@ -71,8 +82,8 @@ fn hit_sphere(center: Point3, radius: f64, ray: Ray) -> f64 {
     let discriminant = b * b - 4.0 * a * c;
 
     if discriminant < 0.0 {
-        return -1.0;
+        return Hit::None;
     }
-    
-    (-b - discriminant.sqrt()) / (2.0 * a)
+
+    Hit::Some((-b - discriminant.sqrt()) / (2.0 * a))
 }
