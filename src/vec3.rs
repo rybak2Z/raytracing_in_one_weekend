@@ -66,9 +66,6 @@ impl ops::Add for Vec3 {
 
 impl ops::AddAssign for Vec3 {
     fn add_assign(&mut self, rhs: Self) {
-        // *self = Self {
-        //     coords: [self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z()],
-        // }
         *self = *self + rhs;
     }
 }
