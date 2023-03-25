@@ -9,13 +9,13 @@ const MAX_COLOR: u32 = 255;
 fn main() -> io::Result<()> {
     let stdout = io::stdout().lock();
     let mut writer = BufWriter::new(stdout);
-    writer.write_all(format!("{FILE_TYPE}\n{HEIGHT} {WIDTH}\n{MAX_COLOR}\n").as_bytes())?;
+    write!(writer, "{FILE_TYPE}\n{HEIGHT} {WIDTH}\n{MAX_COLOR}\n")?;
 
     let stderr = io::stderr().lock();
     let mut writer_err = BufWriter::new(stderr);
 
     for row in (0..HEIGHT).rev() {
-        writer_err.write_all(format!("\rScanlines remaining: {row}").as_bytes())?;
+        write!(writer_err, "\rScanlines remaining: {row}")?;
         writer_err.flush()?;
 
         for col in 0..WIDTH {
