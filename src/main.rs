@@ -76,14 +76,14 @@ fn hit_sphere(center: Point3, radius: f64, ray: Ray) -> Hit {
     let co = ray.origin() - center;
 
     // Quadratic equation
-    let a = Vec3::dot(&ray.direction(), &ray.direction());
-    let b = 2.0 * Vec3::dot(&co, &ray.direction());
-    let c = Vec3::dot(&co, &co) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
+    let a = ray.direction().length_squared();
+    let half_b = Vec3::dot(&co, &ray.direction());
+    let c = co.length_squared() - radius * radius;
+    let discriminant = half_b * half_b - a * c;
 
     if discriminant < 0.0 {
         return Hit::None;
     }
 
-    Hit::Some((-b - discriminant.sqrt()) / (2.0 * a))
+    Hit::Some((-half_b - discriminant.sqrt()) / a)
 }
