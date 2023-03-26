@@ -1,9 +1,12 @@
+pub use std::rc::Rc;
+
 use crate::config::*;
 use crate::ray::*;
 use crate::vec3::*;
 use crate::writing::*;
 
 pub fn render(
+    world: &HittableList,
     writer: &mut BufWriter<StdoutLock>,
     writer_err: &mut BufWriter<StderrLock>,
 ) -> io::Result<()> {
@@ -17,7 +20,7 @@ pub fn render(
                 ORIGIN,
                 lower_left_corner + u * HORIZONTAL + v * VERTICAL - ORIGIN,
             );
-            let pixel_color = get_ray_color(ray);
+            let pixel_color = get_ray_color(ray, world);
             write_pixel(writer, pixel_color)?;
         }
     }
@@ -25,10 +28,9 @@ pub fn render(
     Ok(())
 }
 
-fn get_ray_color(ray: Ray) -> Color {
-    let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
+fn get_ray_color(ray: Ray, world: &HittableList) -> Color {
     let mut hit_record = HitRecord::new();
-    if sphere.hit(ray, 0.0, 100.0, &mut hit_record) {
+    if world.hit(ray, 0.0, f64::INFINITY, &mut hit_record) {
         let (x, y, z) = (
             hit_record.normal.x(),
             hit_record.normal.y(),
@@ -36,12 +38,14 @@ fn get_ray_color(ray: Ray) -> Color {
         );
         return 0.5 * Color::new(x + 1.0, y + 1.0, z + 1.0);
     }
+
     let direction = ray.direction().normalized();
     let t = 0.5 * (direction.y() + 1.0);
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
-struct HitRecord {
+#[derive(Clone, Copy)]
+pub struct HitRecord {
     point: Point3,
     normal: Vec3,
     t: f64,
@@ -67,17 +71,17 @@ impl HitRecord {
     }
 }
 
-trait Hittable {
+pub trait Hittable {
     fn hit(&self, ray: Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool;
 }
 
-struct Sphere {
+pub struct Sphere {
     center: Point3,
     radius: f64,
 }
 
 impl Sphere {
-    fn new(center: Point3, radius: f64) -> Sphere {
+    pub fn new(center: Point3, radius: f64) -> Sphere {
         Sphere { center, radius }
     }
 }
@@ -112,5 +116,43 @@ impl Hittable for Sphere {
         record.set_face_normal(ray, outward_normal);
 
         true
+    }
+}
+
+pub struct HittableList {
+    objects: Vec<Rc<dyn Hittable>>,
+}
+
+impl HittableList {
+    pub fn new() -> HittableList {
+        HittableList { objects: vec![] }
+    }
+
+    pub fn add(&mut self, object: Rc<dyn Hittable>) {
+        self.objects.push(object);
+    }
+}
+
+impl Hittable for HittableList {
+    fn hit(&self, ray: Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool {
+        let mut temp_record = HitRecord::new();
+        let mut hit_anything = false;
+        let mut closest = t_max;
+
+        for object in self.objects.iter() {
+            if object.hit(ray, t_min, t_max, &mut temp_record) && temp_record.t < closest {
+                hit_anything = true;
+                closest = temp_record.t;
+                *record = temp_record;
+            }
+        }
+
+        hit_anything
+    }
+}
+
+impl Default for HittableList {
+    fn default() -> Self {
+        Self::new()
     }
 }
