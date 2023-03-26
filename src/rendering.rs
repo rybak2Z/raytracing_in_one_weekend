@@ -255,11 +255,13 @@ impl Material for UniformScatter {
 
 pub struct Metal {
     albedo: Color,
+    fuzziness: f64,
 }
 
 impl Metal {
-    pub fn new(albedo: Color) -> Metal {
-        Metal { albedo }
+    pub fn new(albedo: Color, fuzziness: f64) -> Metal {
+        let fuzziness = fuzziness.min(1.0);
+        Metal { albedo, fuzziness }
     }
 }
 
@@ -272,7 +274,10 @@ impl Material for Metal {
         scattered_ray: &mut Ray,
     ) -> bool {
         let reflected_direction = Vec3::reflect(ray_in.direction(), hit_record.normal);
-        *scattered_ray = Ray::new(hit_record.point, reflected_direction);
+        *scattered_ray = Ray::new(
+            hit_record.point,
+            reflected_direction + self.fuzziness * Vec3::random_in_unit_sphere(),
+        );
         *attenuation = self.albedo;
 
         Vec3::dot(scattered_ray.direction(), hit_record.normal) > 0.0
