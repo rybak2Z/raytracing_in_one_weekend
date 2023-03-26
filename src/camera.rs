@@ -1,6 +1,6 @@
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
-use crate::config::{ASCPECT_RATIO, VERTICAL_FOV, FOCAL_LENGTH};
+use crate::config::{ASCPECT_RATIO, VERTICAL_FOV, LOOK_FROM, LOOK_AT, VIEW_UP};
 
 pub struct Camera {
     origin: Point3,
@@ -16,11 +16,14 @@ impl Camera {
         let viewport_height = 2.0 * h;
         let viewport_width = ASCPECT_RATIO * viewport_height;
 
-        let origin = Point3::new(0.0, 0.0, 0.0);
-        let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-        let vertical = Vec3::new(0.0, viewport_height, 0.0);
-        let lower_left_corner =
-            origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
+        let w = (LOOK_FROM - LOOK_AT).normalized();
+        let u = Vec3::cross(VIEW_UP, w).normalized();
+        let v = Vec3::cross(w, u);
+
+        let origin = LOOK_FROM;
+        let horizontal = viewport_width * u;
+        let vertical = viewport_height * v;
+        let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - w;
 
         Camera {
             origin,
@@ -30,10 +33,10 @@ impl Camera {
         }
     }
 
-    pub fn get_ray(&self, u: f64, v: f64) -> Ray {
+    pub fn get_ray(&self, s: f64, t: f64) -> Ray {
         Ray::new(
             self.origin,
-            self.lower_left_corner + u * self.horizontal + v * self.vertical - self.origin,
+            self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin,
         )
     }
 }
