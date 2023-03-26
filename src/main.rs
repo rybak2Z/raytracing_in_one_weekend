@@ -76,6 +76,7 @@ struct HitRecord {
     point: Point3,
     normal: Vec3,
     t: f64,
+    on_front_face: bool,
 }
 
 impl HitRecord {
@@ -84,6 +85,15 @@ impl HitRecord {
             point: Vec3::new(0.0, 0.0, 0.0),
             normal: Vec3::new(0.0, 0.0, 0.0),
             t: 0.0,
+            on_front_face: true,
+        }
+    }
+
+    fn set_face_normal(&mut self, ray: Ray, outward_normal: Vec3) {
+        self.on_front_face = Vec3::dot(ray.direction(), outward_normal) < 0.0;
+        self.normal = match self.on_front_face {
+            true => outward_normal,
+            false => -outward_normal,
         }
     }
 }
@@ -129,7 +139,8 @@ impl Hittable for Sphere {
 
         record.t = root;
         record.point = ray.at(record.t);
-        record.normal = (record.point - self.center) / self.radius;
+        let outward_normal = (record.point - self.center) / self.radius;
+        record.set_face_normal(ray, outward_normal);
 
         true
     }
