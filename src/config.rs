@@ -8,6 +8,10 @@ pub const PROGRESS_NUM_WIDTH: u32 = IMAGE_HEIGHT.ilog10() + 1;
 pub const SAMPLES_PER_PIXEL: u32 = 100;
 pub const MAX_DEPTH: i32 = 50;
 
+// Camera
+pub const VERTICAL_FOV: f64 = 90.0;  // in degrees
+pub const FOCAL_LENGTH: f64 = 1.0;
+
 // File format
 pub const FILE_TYPE: &str = "P3";
 pub const MAX_COLOR: u32 = 255;
