@@ -1,4 +1,6 @@
-use crate::config::{APERTURE, ASCPECT_RATIO, LOOK_AT, LOOK_FROM, VERTICAL_FOV, VIEW_UP};
+use crate::config::{
+    APERTURE, ASCPECT_RATIO, FOCUS_DISTANCE, LOOK_AT, LOOK_FROM, VERTICAL_FOV, VIEW_UP,
+};
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
@@ -19,8 +21,12 @@ impl Camera {
         let h = f64::sin(theta / 2.0);
         let viewport_height = 2.0 * h;
         let viewport_width = ASCPECT_RATIO * viewport_height;
-        let focus_distance = (LOOK_FROM - LOOK_AT).length();
         let lens_radius = APERTURE / 2.0;
+
+        let focus_distance = match FOCUS_DISTANCE {
+            Some(distance) => distance,
+            None => (LOOK_FROM - LOOK_AT).length(),
+        };
 
         let w = (LOOK_FROM - LOOK_AT).normalized();
         let u = Vec3::cross(VIEW_UP, w).normalized();
