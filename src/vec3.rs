@@ -71,6 +71,10 @@ impl Vec3 {
         }
         point
     }
+
+    pub fn random_unit_vector() -> Vec3 {
+        Vec3::random_in_unit_sphere().normalized()
+    }
 }
 
 impl Display for Vec3 {
