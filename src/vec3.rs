@@ -90,6 +90,15 @@ impl Vec3 {
         }
     }
 
+    pub fn random_in_unit_disk() -> Vec3 {
+        let mut rng = thread_rng();
+        let mut point = Point3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        while point.length_squared() > 1.0 {
+            point = Point3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        }
+        point
+    }
+
     pub fn reflect(v: Vec3, normal: Vec3) -> Vec3 {
         v - 2.0 * Vec3::dot(v, normal) * normal
     }
