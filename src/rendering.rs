@@ -120,9 +120,9 @@ impl Hittable for Sphere {
 
         // Find the nearest root that lies in the qacceptable range
         let sqrt_discriminant = discriminant.sqrt();
-        let root = (-half_b - sqrt_discriminant) / a;
+        let mut root = (-half_b - sqrt_discriminant) / a;
         if root < t_min || t_max < root {
-            let root = (-half_b + sqrt_discriminant) / a;
+            root = (-half_b + sqrt_discriminant) / a;
             if root < t_min || t_max < root {
                 return false;
             }
