@@ -1,5 +1,6 @@
 pub use std::io::{self, BufWriter, StderrLock, StdoutLock, Write};
 
+use crate::config::{FILE_TYPE, IMAGE_HEIGHT, IMAGE_WIDTH, MAX_COLOR};
 use crate::vec3::Color;
 
 pub fn get_writers() -> (
@@ -13,6 +14,13 @@ pub fn get_writers() -> (
     let writer_err = BufWriter::new(stderr);
 
     (writer, writer_err)
+}
+
+pub fn write_meta_data(writer: &mut BufWriter<StdoutLock>) -> io::Result<()> {
+    write!(
+        writer,
+        "{FILE_TYPE}\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n{MAX_COLOR}\n"
+    )
 }
 
 pub fn finish_writers(
