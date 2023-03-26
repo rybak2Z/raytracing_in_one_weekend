@@ -1,5 +1,6 @@
 pub use std::rc::Rc;
 
+use crate::camera::Camera;
 use crate::config::*;
 use crate::ray::*;
 use crate::vec3::*;
@@ -10,16 +11,13 @@ pub fn render(
     writer: &mut BufWriter<StdoutLock>,
     writer_err: &mut BufWriter<StderrLock>,
 ) -> io::Result<()> {
-    let lower_left_corner = compute_lower_left_corner();
+    let cam = Camera::new();
     for row in (0..IMAGE_HEIGHT).rev() {
         write_progress_update(row, writer_err)?;
         for col in 0..IMAGE_WIDTH {
             let u = col as f64 / (IMAGE_WIDTH - 1) as f64;
             let v = row as f64 / (IMAGE_HEIGHT - 1) as f64;
-            let ray = Ray::new(
-                ORIGIN,
-                lower_left_corner + u * HORIZONTAL + v * VERTICAL - ORIGIN,
-            );
+            let ray = cam.get_ray(u, v);
             let pixel_color = get_ray_color(ray, world);
             write_pixel(writer, pixel_color)?;
         }
