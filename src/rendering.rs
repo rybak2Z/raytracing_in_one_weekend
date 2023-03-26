@@ -7,6 +7,11 @@ use crate::ray::*;
 use crate::vec3::*;
 use crate::writing::*;
 
+pub enum Method {
+    Lambertian,     // "modern"
+    UniformScatter, // "old"
+}
+
 pub fn render(
     world: &HittableList,
     writer: &mut BufWriter<StdoutLock>,
@@ -40,7 +45,12 @@ fn get_ray_color(ray: Ray, world: &HittableList, depth: i32) -> Color {
 
     let mut hit_record = HitRecord::new();
     if world.hit(ray, 0.0001, f64::INFINITY, &mut hit_record) {
-        let target = hit_record.point + hit_record.normal + Vec3::random_unit_vector();
+        let target = match METHOD {
+            Method::Lambertian => hit_record.point + hit_record.normal + Vec3::random_unit_vector(),
+            Method::UniformScatter => {
+                hit_record.point + Vec3::random_in_hemisphere(hit_record.normal)
+            }
+        };
         return 0.5
             * get_ray_color(
                 Ray::new(hit_record.point, target - hit_record.point),
