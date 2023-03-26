@@ -38,6 +38,11 @@ impl Vec3 {
         *self / self.length()
     }
 
+    pub fn is_near_zero(&self) -> bool {
+        let s = 1e-8;
+        self.x().abs() < s && self.y().abs() < s && self.z().abs() < s
+    }
+
     pub fn dot(v1: Vec3, v2: Vec3) -> f64 {
         v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z()
     }
@@ -83,6 +88,10 @@ impl Vec3 {
         } else {
             -in_unit_sphere
         }
+    }
+
+    pub fn reflect(v: Vec3, normal: Vec3) -> Vec3 {
+        v - 2.0 * Vec3::dot(v, normal) * normal
     }
 }
 
@@ -133,6 +142,14 @@ impl ops::Mul<f64> for Vec3 {
 
     fn mul(self, rhs: f64) -> Self::Output {
         Vec3::new(self.x() * rhs, self.y() * rhs, self.z() * rhs)
+    }
+}
+
+impl ops::Mul<Vec3> for Vec3 {
+    type Output = Self;
+
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        Vec3::new(self.x() * rhs.x(), self.y() * rhs.y(), self.z() * rhs.z())
     }
 }
 

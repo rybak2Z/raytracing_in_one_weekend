@@ -7,11 +7,6 @@ use crate::ray::*;
 use crate::vec3::*;
 use crate::writing::*;
 
-pub enum Method {
-    Lambertian,     // "modern"
-    UniformScatter, // "old"
-}
-
 pub fn render(
     world: &HittableList,
     writer: &mut BufWriter<StdoutLock>,
@@ -45,18 +40,15 @@ fn get_ray_color(ray: Ray, world: &HittableList, depth: i32) -> Color {
 
     let mut hit_record = HitRecord::new();
     if world.hit(ray, 0.0001, f64::INFINITY, &mut hit_record) {
-        let target = match METHOD {
-            Method::Lambertian => hit_record.point + hit_record.normal + Vec3::random_unit_vector(),
-            Method::UniformScatter => {
-                hit_record.point + Vec3::random_in_hemisphere(hit_record.normal)
-            }
-        };
-        return 0.5
-            * get_ray_color(
-                Ray::new(hit_record.point, target - hit_record.point),
-                world,
-                depth - 1,
-            );
+        let mut scattered_ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
+        let mut attenuation = Color::new(0.0, 0.0, 0.0);
+        if hit_record
+            .material
+            .scatter(ray, &hit_record, &mut attenuation, &mut scattered_ray)
+        {
+            return attenuation * get_ray_color(scattered_ray, world, depth - 1);
+        }
+        return Color::new(0.0, 0.0, 0.0);
     }
 
     let direction = ray.direction().normalized();
@@ -64,10 +56,10 @@ fn get_ray_color(ray: Ray, world: &HittableList, depth: i32) -> Color {
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
-#[derive(Clone, Copy)]
 pub struct HitRecord {
     point: Point3,
     normal: Vec3,
+    material: Rc<dyn Material>,
     t: f64,
     on_front_face: bool,
 }
@@ -77,6 +69,7 @@ impl HitRecord {
         HitRecord {
             point: Vec3::new(0.0, 0.0, 0.0),
             normal: Vec3::new(0.0, 0.0, 0.0),
+            material: Rc::new(Lambertian::new(Color::new(0.0, 0.0, 0.0))),
             t: 0.0,
             on_front_face: true,
         }
@@ -98,11 +91,16 @@ pub trait Hittable {
 pub struct Sphere {
     center: Point3,
     radius: f64,
+    material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Sphere {
-        Sphere { center, radius }
+    pub fn new(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -134,6 +132,7 @@ impl Hittable for Sphere {
         record.point = ray.at(record.t);
         let outward_normal = (record.point - self.center) / self.radius;
         record.set_face_normal(ray, outward_normal);
+        record.material = Rc::clone(&self.material);
 
         true
     }
@@ -157,14 +156,17 @@ impl Hittable for HittableList {
     fn hit(&self, ray: Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool {
         let mut temp_record = HitRecord::new();
         let mut hit_anything = false;
-        let mut closest = t_max;
+        let mut closest = HitRecord::new();
+        closest.t = t_max;
 
         for object in self.objects.iter() {
-            if object.hit(ray, t_min, t_max, &mut temp_record) && temp_record.t < closest {
+            if object.hit(ray, t_min, t_max, &mut temp_record) && temp_record.t < closest.t {
                 hit_anything = true;
-                closest = temp_record.t;
-                *record = temp_record;
+                std::mem::swap(&mut temp_record, &mut closest);
             }
+        }
+        if hit_anything {
+            *record = closest;
         }
 
         hit_anything
@@ -174,5 +176,105 @@ impl Hittable for HittableList {
 impl Default for HittableList {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+pub trait Material {
+    fn scatter(
+        &self,
+        ray_in: Ray,
+        hit_record: &HitRecord,
+        attenuation: &mut Color,
+        scattered_ray: &mut Ray,
+    ) -> bool;
+}
+
+pub struct Lambertian {
+    albedo: Color,
+}
+
+impl Lambertian {
+    pub fn new(albedo: Color) -> Lambertian {
+        Lambertian { albedo }
+    }
+}
+
+impl Material for Lambertian {
+    fn scatter(
+        &self,
+        _ray_in: Ray,
+        hit_record: &HitRecord,
+        attenuation: &mut Color,
+        scattered_ray: &mut Ray,
+    ) -> bool {
+        let mut scatter_direction = hit_record.normal + Vec3::random_unit_vector();
+
+        // Catch degenerate scatter direction
+        if scatter_direction.is_near_zero() {
+            scatter_direction = hit_record.normal;
+        }
+
+        *scattered_ray = Ray::new(hit_record.point, scatter_direction);
+        *attenuation = self.albedo;
+
+        true
+    }
+}
+
+pub struct UniformScatter {
+    albedo: Color,
+}
+
+impl UniformScatter {
+    pub fn new(albedo: Color) -> UniformScatter {
+        UniformScatter { albedo }
+    }
+}
+
+impl Material for UniformScatter {
+    fn scatter(
+        &self,
+        _ray_in: Ray,
+        hit_record: &HitRecord,
+        attenuation: &mut Color,
+        scattered_ray: &mut Ray,
+    ) -> bool {
+        let mut scatter_direction = Vec3::random_in_hemisphere(hit_record.normal);
+
+        // Catch degenerate scatter direction
+        if scatter_direction.is_near_zero() {
+            scatter_direction = hit_record.normal;
+        }
+
+        *scattered_ray = Ray::new(hit_record.point, scatter_direction);
+        *attenuation = self.albedo;
+
+        true
+    }
+}
+
+pub struct Metal {
+    albedo: Color,
+}
+
+impl Metal {
+    pub fn new(albedo: Color) -> Metal {
+        Metal { albedo }
+    }
+}
+
+impl Material for Metal {
+    fn scatter(
+        &self,
+        ray_in: Ray,
+        hit_record: &HitRecord,
+        attenuation: &mut Color,
+        scattered_ray: &mut Ray,
+    ) -> bool {
+        let reflected_direction = Vec3::reflect(ray_in.direction(), hit_record.normal);
+        *scattered_ray = Ray::new(hit_record.point, reflected_direction);
+        *attenuation = self.albedo;
+
+        Vec3::dot(scattered_ray.direction(), hit_record.normal) > 0.0
     }
 }
