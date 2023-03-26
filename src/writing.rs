@@ -1,6 +1,8 @@
 pub use std::io::{self, BufWriter, StderrLock, StdoutLock, Write};
 
-use crate::config::{FILE_TYPE, IMAGE_HEIGHT, IMAGE_WIDTH, MAX_COLOR, SAMPLES_PER_PIXEL, PROGRESS_NUM_WIDTH};
+use crate::config::{
+    FILE_TYPE, IMAGE_HEIGHT, IMAGE_WIDTH, MAX_COLOR, PROGRESS_NUM_WIDTH, SAMPLES_PER_PIXEL,
+};
 use crate::vec3::Color;
 
 pub fn get_writers() -> (
@@ -34,7 +36,12 @@ pub fn finish_writers(
 }
 
 pub fn write_progress_update(row: u32, writer_err: &mut BufWriter<StderrLock>) -> io::Result<()> {
-    write!(writer_err, "\rScanlines remaining: {:0>width$}", row, width = PROGRESS_NUM_WIDTH as usize)?;
+    write!(
+        writer_err,
+        "\rScanlines remaining: {:0>width$}",
+        row,
+        width = PROGRESS_NUM_WIDTH as usize
+    )?;
     writer_err.flush()?;
     Ok(())
 }

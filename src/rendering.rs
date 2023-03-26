@@ -1,5 +1,5 @@
-pub use std::rc::Rc;
 use rand::prelude::*;
+pub use std::rc::Rc;
 
 use crate::camera::Camera;
 use crate::config::*;
@@ -23,7 +23,7 @@ pub fn render(
                 let u = (col as f64 + rng.gen::<f64>()) / (IMAGE_WIDTH - 1) as f64;
                 let v = (row as f64 + rng.gen::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
                 let ray = cam.get_ray(u, v);
-                pixel_color += get_ray_color(ray, world);
+                pixel_color += get_ray_color(ray, world, MAX_DEPTH);
             }
             write_pixel(writer, pixel_color)?;
         }
@@ -32,15 +32,21 @@ pub fn render(
     Ok(())
 }
 
-fn get_ray_color(ray: Ray, world: &HittableList) -> Color {
+fn get_ray_color(ray: Ray, world: &HittableList, depth: i32) -> Color {
+    // If we've exceeded the ray bounce limit, no more light is gathered
+    if depth <= 0 {
+        return Color::new(0.0, 0.0, 0.0);
+    }
+
     let mut hit_record = HitRecord::new();
     if world.hit(ray, 0.0, f64::INFINITY, &mut hit_record) {
-        let (x, y, z) = (
-            hit_record.normal.x(),
-            hit_record.normal.y(),
-            hit_record.normal.z(),
-        );
-        return 0.5 * Color::new(x + 1.0, y + 1.0, z + 1.0);
+        let target = hit_record.point + hit_record.normal + Vec3::random_in_unit_sphere();
+        return 0.5
+            * get_ray_color(
+                Ray::new(hit_record.point, target - hit_record.point),
+                world,
+                depth - 1,
+            );
     }
 
     let direction = ray.direction().normalized();

@@ -1,3 +1,4 @@
+use rand::prelude::*;
 use std::{fmt::Display, ops};
 
 pub type Point3 = Vec3;
@@ -47,6 +48,28 @@ impl Vec3 {
             v1.z() * v2.x() - v1.x() * v2.z(),
             v1.x() * v2.y() - v1.y() * v2.x(),
         )
+    }
+
+    pub fn random() -> Vec3 {
+        let mut rng = thread_rng();
+        Vec3::new(rng.gen(), rng.gen(), rng.gen())
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Vec3 {
+        let mut rng = thread_rng();
+        Vec3::new(
+            rng.gen_range(min..max),
+            rng.gen_range(min..max),
+            rng.gen_range(min..max),
+        )
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
+        let mut point = Vec3::random_range(-1.0, 1.0);
+        while point.length_squared() >= 1.0 {
+            point = Vec3::random_range(-1.0, 1.0);
+        }
+        point
     }
 }
 
