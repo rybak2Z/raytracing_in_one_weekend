@@ -1,6 +1,6 @@
 pub use std::io::{self, BufWriter, StderrLock, StdoutLock, Write};
 
-use crate::config::{FILE_TYPE, IMAGE_HEIGHT, IMAGE_WIDTH, MAX_COLOR};
+use crate::config::{FILE_TYPE, IMAGE_HEIGHT, IMAGE_WIDTH, MAX_COLOR, SAMPLES_PER_PIXEL};
 use crate::vec3::Color;
 
 pub fn get_writers() -> (
@@ -40,11 +40,17 @@ pub fn write_progress_update(row: u32, writer_err: &mut BufWriter<StderrLock>) -
 }
 
 pub fn write_pixel<W: Write>(writer: &mut W, pixel_color: Color) -> io::Result<()> {
+    let (r, g, b) = (pixel_color.x(), pixel_color.y(), pixel_color.z());
+    let scale = 1.0 / SAMPLES_PER_PIXEL as f64;
+    let r = r * scale;
+    let g = g * scale;
+    let b = b * scale;
+
     writeln!(
         writer,
         "{} {} {}",
-        (255.0 * pixel_color.x()) as u32,
-        (255.0 * pixel_color.y()) as u32,
-        (255.0 * pixel_color.z()) as u32
+        (255.0 * r) as u32,
+        (255.0 * g) as u32,
+        (255.0 * b) as u32
     )
 }

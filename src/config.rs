@@ -2,6 +2,7 @@
 pub const ASCPECT_RATIO: f64 = 16.0 / 9.0;
 pub const IMAGE_WIDTH: u32 = 400;
 pub const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASCPECT_RATIO) as u32;
+pub const SAMPLES_PER_PIXEL: u32 = 100;
 
 // File format
 pub const FILE_TYPE: &str = "P3";

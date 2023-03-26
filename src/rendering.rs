@@ -1,4 +1,5 @@
 pub use std::rc::Rc;
+use rand::prelude::*;
 
 use crate::camera::Camera;
 use crate::config::*;
@@ -12,13 +13,18 @@ pub fn render(
     writer_err: &mut BufWriter<StderrLock>,
 ) -> io::Result<()> {
     let cam = Camera::new();
+    let mut rng = thread_rng();
+
     for row in (0..IMAGE_HEIGHT).rev() {
         write_progress_update(row, writer_err)?;
         for col in 0..IMAGE_WIDTH {
-            let u = col as f64 / (IMAGE_WIDTH - 1) as f64;
-            let v = row as f64 / (IMAGE_HEIGHT - 1) as f64;
-            let ray = cam.get_ray(u, v);
-            let pixel_color = get_ray_color(ray, world);
+            let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+            for _sample in 0..SAMPLES_PER_PIXEL {
+                let u = (col as f64 + rng.gen::<f64>()) / (IMAGE_WIDTH - 1) as f64;
+                let v = (row as f64 + rng.gen::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
+                let ray = cam.get_ray(u, v);
+                pixel_color += get_ray_color(ray, world);
+            }
             write_pixel(writer, pixel_color)?;
         }
     }
