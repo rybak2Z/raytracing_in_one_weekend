@@ -283,3 +283,45 @@ impl Material for Metal {
         Vec3::dot(scattered_ray.direction(), hit_record.normal) > 0.0
     }
 }
+
+pub struct Dialectric {
+    refractive_index: f64
+}
+
+impl Dialectric {
+    pub fn new(refractive_index: f64) -> Dialectric {
+        Dialectric { refractive_index }
+    }
+}
+
+impl Material for Dialectric {
+    fn scatter(
+            &self,
+            ray_in: Ray,
+            hit_record: &HitRecord,
+            attenuation: &mut Color,
+            scattered_ray: &mut Ray,
+        ) -> bool {
+        *attenuation = Color::new(1.0, 1.0, 1.0);
+        let refraction_ratio = match hit_record.on_front_face {
+            true => 1.0 / self.refractive_index,
+            false => self.refractive_index,
+        };
+
+        let unit_direction = ray_in.direction().normalized();
+        let cos_theta = 1.0_f64.min(Vec3::dot(-unit_direction, hit_record.normal));
+        let sin_theta = (1.0_f64 - cos_theta * cos_theta).sqrt();
+
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+        let direction: Vec3;
+        if cannot_refract {
+            direction = Vec3::reflect(unit_direction, hit_record.normal);
+        } else {
+            direction = Vec3::refract(unit_direction, hit_record.normal, refraction_ratio);
+        }
+
+        *scattered_ray = Ray::new(hit_record.point, direction);
+
+        true
+    }
+}
