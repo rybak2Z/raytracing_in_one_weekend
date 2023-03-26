@@ -77,7 +77,7 @@ fn hit_sphere(center: Point3, radius: f64, ray: Ray) -> Hit {
 
     // Quadratic equation
     let a = ray.direction().length_squared();
-    let half_b = Vec3::dot(&co, &ray.direction());
+    let half_b = Vec3::dot(co, ray.direction());
     let c = co.length_squared() - radius * radius;
     let discriminant = half_b * half_b - a * c;
 
