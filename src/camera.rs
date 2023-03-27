@@ -17,20 +17,14 @@ pub struct Camera {
 
 impl Camera {
     pub fn new() -> Camera {
-        let theta = VERTICAL_FOV.to_radians();
-        let h = f64::tan(theta / 2.0);
-        let viewport_height = 2.0 * h;
-        let viewport_width = ASCPECT_RATIO * viewport_height;
-        let lens_radius = APERTURE / 2.0;
+        let (viewport_width, viewport_height) = calculate_viewport_dimensions();
+        let (u, v, w) = calculate_camera_orientation();
 
+        let lens_radius = APERTURE / 2.0;
         let focus_distance = match FOCUS_DISTANCE {
             Some(distance) => distance,
             None => (LOOK_FROM - LOOK_AT).length(),
         };
-
-        let w = (LOOK_FROM - LOOK_AT).normalized();
-        let u = Vec3::cross(VIEW_UP, w).normalized();
-        let v = Vec3::cross(w, u);
 
         let origin = LOOK_FROM;
         let horizontal = focus_distance * viewport_width * u;
@@ -53,10 +47,11 @@ impl Camera {
         let radius = self.lens_radius * Vec3::random_in_unit_disk();
         let offset = self.u * radius.x() + self.v * radius.y();
 
-        Ray::new(
-            self.origin + offset,
-            self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin - offset,
-        )
+        let start = self.origin + offset;
+        let point_on_focus_plane = self.lower_left_corner + s * self.horizontal + t * self.vertical;
+        let direction = point_on_focus_plane - start;
+
+        Ray::new(start, direction)
     }
 }
 
@@ -64,4 +59,22 @@ impl Default for Camera {
     fn default() -> Self {
         Self::new()
     }
+}
+
+fn calculate_viewport_dimensions() -> (f64, f64) {
+    let vertical_radians = VERTICAL_FOV.to_radians();
+    let half_vertical_distance_on_viewing_plane = f64::tan(vertical_radians / 2.0);
+    let viewport_height = 2.0 * half_vertical_distance_on_viewing_plane;
+    let viewport_width = ASCPECT_RATIO * viewport_height;
+
+    (viewport_width, viewport_height)
+}
+
+fn calculate_camera_orientation() -> (Vec3, Vec3, Vec3) {
+    let view_direction = LOOK_AT - LOOK_FROM;
+    let w = (-view_direction).normalized();
+    let u = Vec3::cross(VIEW_UP, w).normalized();
+    let v = Vec3::cross(w, u);
+
+    (u, v, w)
 }
