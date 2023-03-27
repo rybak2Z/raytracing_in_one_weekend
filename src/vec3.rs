@@ -1,29 +1,32 @@
 use rand::prelude::*;
-use std::{fmt::Display, ops};
+use std::ops;
 
-pub type Point3 = Vec3;
-pub type Color = Vec3;
+mod point3;
+mod color;
+
+pub use point3::Point3;
+pub use color::Color;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vec3 {
-    coords: [f64; 3],
+    components: [f64; 3],
 }
 
 impl Vec3 {
     pub const fn new(x: f64, y: f64, z: f64) -> Vec3 {
-        Vec3 { coords: [x, y, z] }
+        Vec3 { components: [x, y, z] }
     }
 
     pub fn x(&self) -> f64 {
-        self.coords[0]
+        self.components[0]
     }
 
     pub fn y(&self) -> f64 {
-        self.coords[1]
+        self.components[1]
     }
 
     pub fn z(&self) -> f64 {
-        self.coords[2]
+        self.components[2]
     }
 
     pub fn length(&self) -> f64 {
@@ -92,15 +95,15 @@ impl Vec3 {
 
     pub fn random_in_unit_disk() -> Vec3 {
         let mut rng = thread_rng();
-        let mut point = Point3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
-        while point.length_squared() > 1.0 {
-            point = Point3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        let mut vec = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        while vec.length_squared() > 1.0 {
+            vec = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
         }
-        point
+        vec
     }
 
-    pub fn reflect(v: Vec3, normal: Vec3) -> Vec3 {
-        v - 2.0 * Vec3::dot(v, normal) * normal
+    pub fn reflect(vector: Vec3, normal: Vec3) -> Vec3 {
+        vector - 2.0 * Vec3::dot(vector, normal) * normal
     }
 
     pub fn refract(uv: Vec3, normal: Vec3, etai_over_etat: f64) -> Vec3 {
@@ -109,12 +112,6 @@ impl Vec3 {
         let r_out_parallel = -(1.0 - r_out_perpendicular.length_squared()).abs().sqrt() * normal;
 
         r_out_perpendicular + r_out_parallel
-    }
-}
-
-impl Display for Vec3 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {}", self.x(), self.y(), self.z())
     }
 }
 
@@ -162,14 +159,6 @@ impl ops::Mul<f64> for Vec3 {
     }
 }
 
-impl ops::Mul<Vec3> for Vec3 {
-    type Output = Self;
-
-    fn mul(self, rhs: Vec3) -> Self::Output {
-        Vec3::new(self.x() * rhs.x(), self.y() * rhs.y(), self.z() * rhs.z())
-    }
-}
-
 impl ops::Mul<Vec3> for f64 {
     type Output = Vec3;
 
@@ -188,7 +177,7 @@ impl ops::Div<f64> for Vec3 {
     type Output = Self;
 
     fn div(self, rhs: f64) -> Self::Output {
-        Vec3::new(self.x() / rhs, self.y() / rhs, self.z() / rhs)
+        self.clone() * (1.0 / rhs)
     }
 }
 

@@ -13,7 +13,7 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
-fn _build_world() -> HittableList {
+fn build_world() -> HittableList {
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
     let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
     let material_left = Rc::new(Dialectric::new(1.5));

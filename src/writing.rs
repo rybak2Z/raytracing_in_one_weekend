@@ -47,7 +47,7 @@ pub fn write_progress_update(row: u32, writer_err: &mut BufWriter<StderrLock>) -
 }
 
 pub fn write_pixel<W: Write>(writer: &mut W, pixel_color: Color) -> io::Result<()> {
-    let (r, g, b) = (pixel_color.x(), pixel_color.y(), pixel_color.z());
+    let (r, g, b) = (pixel_color.r(), pixel_color.g(), pixel_color.b());
     let scale = 1.0 / SAMPLES_PER_PIXEL as f64;
     let r = (r * scale).sqrt();
     let g = (g * scale).sqrt();

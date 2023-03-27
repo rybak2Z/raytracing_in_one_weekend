@@ -67,7 +67,7 @@ pub struct HitRecord {
 impl HitRecord {
     fn new() -> HitRecord {
         HitRecord {
-            point: Vec3::new(0.0, 0.0, 0.0),
+            point: Point3::new(0.0, 0.0, 0.0),
             normal: Vec3::new(0.0, 0.0, 0.0),
             material: Rc::new(Lambertian::new(Color::new(0.0, 0.0, 0.0))),
             t: 0.0,
