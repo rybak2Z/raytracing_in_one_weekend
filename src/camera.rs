@@ -18,7 +18,7 @@ pub struct Camera {
 impl Camera {
     pub fn new() -> Camera {
         let theta = VERTICAL_FOV.to_radians();
-        let h = f64::sin(theta / 2.0);
+        let h = f64::tan(theta / 2.0);
         let viewport_height = 2.0 * h;
         let viewport_width = ASCPECT_RATIO * viewport_height;
         let lens_radius = APERTURE / 2.0;
