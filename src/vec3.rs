@@ -4,7 +4,7 @@ use std::{fmt::Display, ops};
 pub type Point3 = Vec3;
 pub type Color = Vec3;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Vec3 {
     coords: [f64; 3],
 }
