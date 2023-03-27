@@ -177,7 +177,7 @@ impl ops::Div<f64> for Vec3 {
     type Output = Self;
 
     fn div(self, rhs: f64) -> Self::Output {
-        self.clone() * (1.0 / rhs)
+        self * (1.0 / rhs)
     }
 }
 

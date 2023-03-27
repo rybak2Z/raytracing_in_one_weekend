@@ -4,3 +4,4 @@ pub mod ray;
 pub mod rendering;
 pub mod vec3;
 pub mod writing;
+pub mod world_building;
