@@ -1,4 +1,4 @@
-use crate::vec3::Point3;
+use crate::vec3::{Vec3, Point3};
 
 // Image
 pub const ASCPECT_RATIO: f64 = 3.0 / 2.0;
@@ -13,7 +13,7 @@ pub const MAX_DEPTH: i32 = 50;
 // Camera
 pub const LOOK_FROM: Point3 = Point3::new(13.0, 2.0, 3.0);
 pub const LOOK_AT: Point3 = Point3::new(0.0, 0.0, 0.0);
-pub const VIEW_UP: Point3 = Point3::new(0.0, 1.0, 0.0);
+pub const VIEW_UP: Vec3 = Vec3::new(0.0, 1.0, 0.0);
 pub const VERTICAL_FOV: f64 = 20.0; // in degrees
 pub const APERTURE: f64 = 0.1;
 pub const FOCUS_DISTANCE: Option<f64> = Some(10.0);
