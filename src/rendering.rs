@@ -18,7 +18,7 @@ pub fn render(
     for row in (0..IMAGE_HEIGHT).rev() {
         write_progress_update(row, writer_err)?;
         for col in 0..IMAGE_WIDTH {
-            let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+            let mut pixel_color = Color::default();
             for _sample in 0..SAMPLES_PER_PIXEL {
                 let u = (col as f64 + rng.gen::<f64>()) / (IMAGE_WIDTH - 1) as f64;
                 let v = (row as f64 + rng.gen::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
@@ -35,20 +35,20 @@ pub fn render(
 fn get_ray_color(ray: Ray, world: &HittableList, depth: i32) -> Color {
     // If we've exceeded the ray bounce limit, no more light is gathered
     if depth <= 0 {
-        return Color::new(0.0, 0.0, 0.0);
+        return Color::default();
     }
 
     let mut hit_record = HitRecord::new();
     if world.hit(ray, 0.0001, f64::INFINITY, &mut hit_record) {
-        let mut scattered_ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
-        let mut attenuation = Color::new(0.0, 0.0, 0.0);
+        let mut scattered_ray = Ray::default();
+        let mut attenuation = Color::default();
         if hit_record
             .material
             .scatter(ray, &hit_record, &mut attenuation, &mut scattered_ray)
         {
             return attenuation * get_ray_color(scattered_ray, world, depth - 1);
         }
-        return Color::new(0.0, 0.0, 0.0);
+        return Color::default();
     }
 
     let direction = ray.direction().normalized();
@@ -67,9 +67,9 @@ pub struct HitRecord {
 impl HitRecord {
     fn new() -> HitRecord {
         HitRecord {
-            point: Point3::new(0.0, 0.0, 0.0),
-            normal: Vec3::new(0.0, 0.0, 0.0),
-            material: Rc::new(Lambertian::new(Color::new(0.0, 0.0, 0.0))),
+            point: Point3::default(),
+            normal: Vec3::default(),
+            material: Rc::new(Lambertian::new(Color::default())),
             t: 0.0,
             on_front_face: true,
         }
