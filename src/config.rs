@@ -1,23 +1,38 @@
 use crate::vec3::{Vec3, Point3};
+use crate::camera::CameraConfiguration;
+use crate::world_building::WorldType;
 
 // Image
 pub const ASCPECT_RATIO: f64 = 3.0 / 2.0;
-pub const IMAGE_WIDTH: u32 = 1200;
+pub const IMAGE_WIDTH: u32 = 100;
 pub const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASCPECT_RATIO) as u32;
 pub const PROGRESS_NUM_WIDTH: u32 = IMAGE_HEIGHT.ilog10() + 1;
 
+// World
+pub const WORLD_TYPE: WorldType = WorldType::Custom1;
+
 // Rendering
-pub const SAMPLES_PER_PIXEL: u32 = 500;
-pub const MAX_DEPTH: i32 = 50;
+pub const SAMPLES_PER_PIXEL: u32 = 100;
+pub const MAX_DEPTH: i32 = 15;
 
 // Camera
-pub const LOOK_FROM: Point3 = Point3::new(13.0, 2.0, 3.0);
-pub const LOOK_AT: Point3 = Point3::new(0.0, 0.0, 0.0);
-pub const VIEW_UP: Vec3 = Vec3::new(0.0, 1.0, 0.0);
-pub const VERTICAL_FOV: f64 = 20.0; // in degrees
-pub const APERTURE: f64 = 0.1;
-pub const FOCUS_DISTANCE: Option<f64> = Some(10.0);
-pub const FOCAL_LENGTH: f64 = 1.0;
+pub const USE_WORLD_SPECIFIC_CAM: bool = true; // if false, the settings in here are used
+const LOOK_FROM: Point3 = Point3::new(13.0, 2.0, 3.0);
+const LOOK_AT: Point3 = Point3::new(0.0, 0.0, 0.0);
+const VIEW_UP: Vec3 = Vec3::new(0.0, 1.0, 0.0);
+const VERTICAL_FOV: f64 = 20.0; // in degrees
+const APERTURE: f64 = 0.1;
+const FOCUS_DISTANCE: Option<f64> = Some(10.0);
+const FOCAL_LENGTH: f64 = 1.0;
+pub const CAMERA_CONFIG: CameraConfiguration = CameraConfiguration {
+    look_from: LOOK_FROM,
+    look_at: LOOK_AT,
+    view_up: VIEW_UP,
+    vertical_fov: VERTICAL_FOV,
+    aperture: APERTURE,
+    focus_distance: FOCUS_DISTANCE,
+    focal_length: FOCAL_LENGTH,
+};
 
 // File format
 pub const FILE_TYPE: &str = "P3";
