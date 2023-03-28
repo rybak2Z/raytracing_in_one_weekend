@@ -2,7 +2,7 @@ use rand::prelude::*;
 
 use crate::ray::Ray;
 use crate::rendering::HitRecord;
-use crate::vec3::{Color, Vec3};
+use crate::vec3::*;
 
 pub struct Scatter {
     pub ray: Ray,
@@ -138,7 +138,7 @@ impl Material for Dialectric {
             };
 
         let scattered_ray = Ray::new(hit_record.point, direction);
-        let attenuation = Color::new(1.0, 1.0, 1.0);
+        let attenuation = color::WHITE;
 
         Some(Scatter {
             ray: scattered_ray,

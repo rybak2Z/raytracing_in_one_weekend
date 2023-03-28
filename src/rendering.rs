@@ -83,8 +83,8 @@ fn get_sky_color(ray: &Ray) -> Color {
     let direction = ray.direction().normalized();
     let blend_factor = 0.5 * (direction.y() + 1.0);
 
-    let white_part = (1.0 - blend_factor) * Color::new(1.0, 1.0, 1.0);
-    let blue_part = blend_factor * Color::new(0.5, 0.7, 1.0);
+    let white_part = (1.0 - blend_factor) * color::WHITE;
+    let blue_part = blend_factor * color::SKY;
 
     white_part + blue_part
 }

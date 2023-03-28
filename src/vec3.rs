@@ -1,11 +1,11 @@
 use rand::prelude::*;
 use std::ops;
 
-mod color;
+pub mod color;
 mod point3;
 
 pub use color::Color;
-pub use point3::Point3;
+pub use point3::*;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vec3 {
