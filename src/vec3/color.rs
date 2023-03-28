@@ -1,5 +1,8 @@
 use std::{fmt::Display, ops};
 
+mod premade;
+pub use premade::*;
+
 use crate::vec3::Vec3;
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -8,7 +11,7 @@ pub struct Color {
 }
 
 impl Color {
-    pub fn new(r: f64, g: f64, b: f64) -> Color {
+    pub const fn new(r: f64, g: f64, b: f64) -> Color {
         Color { rgb: [r, g, b] }
     }
 
