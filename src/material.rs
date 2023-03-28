@@ -2,8 +2,13 @@ use crate::ray::Ray;
 use crate::rendering::HitRecord;
 use crate::vec3::{Color, Vec3};
 
+pub struct Scatter {
+    pub ray: Ray,
+    pub attenuation: Color,
+}
+
 pub trait Material {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> (bool, Ray, Color);
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<Scatter>;
 }
 
 pub struct Lambertian {
@@ -17,7 +22,7 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
+    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> Option<Scatter> {
         let mut scatter_direction = hit_record.normal + Vec3::random_unit_vector();
 
         // Catch degenerate scatter direction
@@ -26,9 +31,8 @@ impl Material for Lambertian {
         }
 
         let scattered_ray = Ray::new(hit_record.point, scatter_direction);
-        let attenuation = self.albedo;
 
-        (true, scattered_ray, attenuation)
+        Some(Scatter { ray: scattered_ray, attenuation: self.albedo })
     }
 }
 
@@ -43,7 +47,7 @@ impl UniformScatter {
 }
 
 impl Material for UniformScatter {
-    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
+    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> Option<Scatter> {
         let mut scatter_direction = Vec3::random_in_hemisphere(hit_record.normal);
 
         // Catch degenerate scatter direction
@@ -52,9 +56,8 @@ impl Material for UniformScatter {
         }
 
         let scattered_ray = Ray::new(hit_record.point, scatter_direction);
-        let attenuation = self.albedo;
 
-        (true, scattered_ray, attenuation)
+        Some(Scatter { ray: scattered_ray, attenuation: self.albedo })
     }
 }
 
@@ -71,16 +74,18 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<Scatter> {
         let reflected_direction = Vec3::reflect(ray_in.direction(), hit_record.normal);
         let scattered_ray = Ray::new(
             hit_record.point,
             reflected_direction + self.fuzziness * Vec3::random_in_unit_sphere(),
         );
-        let attenuation = self.albedo;
         let does_hit = Vec3::dot(scattered_ray.direction(), hit_record.normal) > 0.0;
+        if !does_hit {
+            return None;
+        }
 
-        (does_hit, scattered_ray, attenuation)
+        Some(Scatter { ray: scattered_ray, attenuation: self.albedo })
     }
 }
 
@@ -95,7 +100,7 @@ impl Dialectric {
 }
 
 impl Material for Dialectric {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<Scatter> {
         let refraction_ratio = match hit_record.on_front_face {
             true => 1.0 / self.refractive_index,
             false => self.refractive_index,
@@ -115,6 +120,6 @@ impl Material for Dialectric {
         let scattered_ray = Ray::new(hit_record.point, direction);
         let attenuation = Color::new(1.0, 1.0, 1.0);
 
-        (true, scattered_ray, attenuation)
+        Some(Scatter { ray: scattered_ray, attenuation })
     }
 }

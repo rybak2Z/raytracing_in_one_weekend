@@ -70,9 +70,8 @@ fn get_ray_color(ray: &Ray, world: &HittableList, depth: i32) -> Color {
     }
 
     if let Some(hit_record) = world.hit(ray, 0.0001, f64::INFINITY) {
-        let (does_hit, scattered_ray, attenuation) = hit_record.material.scatter(ray, &hit_record);
-        if does_hit {
-            return attenuation * get_ray_color(&scattered_ray, world, depth - 1);
+        if let Some(scatter) = hit_record.material.scatter(ray, &hit_record) {
+            return scatter.attenuation * get_ray_color(&scatter.ray, world, depth - 1);
         }
         return Color::default();
     }
