@@ -39,12 +39,8 @@ fn get_ray_color(ray: Ray, world: &HittableList, depth: i32) -> Color {
 
     let mut hit_record = HitRecord::new();
     if world.hit(ray, 0.0001, f64::INFINITY, &mut hit_record) {
-        let mut scattered_ray = Ray::default();
-        let mut attenuation = Color::default();
-        if hit_record
-            .material
-            .scatter(ray, &hit_record, &mut attenuation, &mut scattered_ray)
-        {
+        let (does_hit, scattered_ray, attenuation) = hit_record.material.scatter(ray, &hit_record);
+        if does_hit {
             return attenuation * get_ray_color(scattered_ray, world, depth - 1);
         }
         return Color::default();
@@ -183,9 +179,7 @@ pub trait Material {
         &self,
         ray_in: Ray,
         hit_record: &HitRecord,
-        attenuation: &mut Color,
-        scattered_ray: &mut Ray,
-    ) -> bool;
+    ) -> (bool, Ray, Color);
 }
 
 pub struct Lambertian {
@@ -203,9 +197,7 @@ impl Material for Lambertian {
         &self,
         _ray_in: Ray,
         hit_record: &HitRecord,
-        attenuation: &mut Color,
-        scattered_ray: &mut Ray,
-    ) -> bool {
+    ) -> (bool, Ray, Color) {
         let mut scatter_direction = hit_record.normal + Vec3::random_unit_vector();
 
         // Catch degenerate scatter direction
@@ -213,10 +205,10 @@ impl Material for Lambertian {
             scatter_direction = hit_record.normal;
         }
 
-        *scattered_ray = Ray::new(hit_record.point, scatter_direction);
-        *attenuation = self.albedo;
+        let scattered_ray = Ray::new(hit_record.point, scatter_direction);
+        let attenuation = self.albedo;
 
-        true
+        (true, scattered_ray, attenuation)
     }
 }
 
@@ -235,9 +227,7 @@ impl Material for UniformScatter {
         &self,
         _ray_in: Ray,
         hit_record: &HitRecord,
-        attenuation: &mut Color,
-        scattered_ray: &mut Ray,
-    ) -> bool {
+    ) -> (bool, Ray, Color) {
         let mut scatter_direction = Vec3::random_in_hemisphere(hit_record.normal);
 
         // Catch degenerate scatter direction
@@ -245,10 +235,10 @@ impl Material for UniformScatter {
             scatter_direction = hit_record.normal;
         }
 
-        *scattered_ray = Ray::new(hit_record.point, scatter_direction);
-        *attenuation = self.albedo;
+        let scattered_ray = Ray::new(hit_record.point, scatter_direction);
+        let attenuation = self.albedo;
 
-        true
+        (true, scattered_ray, attenuation)
     }
 }
 
@@ -269,17 +259,16 @@ impl Material for Metal {
         &self,
         ray_in: Ray,
         hit_record: &HitRecord,
-        attenuation: &mut Color,
-        scattered_ray: &mut Ray,
-    ) -> bool {
+    ) -> (bool, Ray, Color) {
         let reflected_direction = Vec3::reflect(ray_in.direction(), hit_record.normal);
-        *scattered_ray = Ray::new(
+        let scattered_ray = Ray::new(
             hit_record.point,
             reflected_direction + self.fuzziness * Vec3::random_in_unit_sphere(),
         );
-        *attenuation = self.albedo;
+        let attenuation = self.albedo;
+        let does_hit = Vec3::dot(scattered_ray.direction(), hit_record.normal) > 0.0;
 
-        Vec3::dot(scattered_ray.direction(), hit_record.normal) > 0.0
+        (does_hit, scattered_ray, attenuation)
     }
 }
 
@@ -298,10 +287,7 @@ impl Material for Dialectric {
         &self,
         ray_in: Ray,
         hit_record: &HitRecord,
-        attenuation: &mut Color,
-        scattered_ray: &mut Ray,
-    ) -> bool {
-        *attenuation = Color::new(1.0, 1.0, 1.0);
+    ) -> (bool, Ray, Color) {
         let refraction_ratio = match hit_record.on_front_face {
             true => 1.0 / self.refractive_index,
             false => self.refractive_index,
@@ -318,8 +304,9 @@ impl Material for Dialectric {
             Vec3::refract(unit_direction, hit_record.normal, refraction_ratio)
         };
 
-        *scattered_ray = Ray::new(hit_record.point, direction);
+        let scattered_ray = Ray::new(hit_record.point, direction);
+        let attenuation = Color::new(1.0, 1.0, 1.0);
 
-        true
+        (true, scattered_ray, attenuation)
     }
 }
