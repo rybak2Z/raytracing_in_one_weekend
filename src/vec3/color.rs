@@ -23,7 +23,7 @@ impl Color {
     pub fn b(&self) -> f64 {
         self.rgb[2]
     }
-    
+
     pub fn random() -> Color {
         let random_vec = Vec3::random();
         Color::new(random_vec.x(), random_vec.y(), random_vec.z())

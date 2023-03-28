@@ -26,9 +26,10 @@ pub struct Camera {
 impl Camera {
     pub fn new(config: CameraConfiguration) -> Camera {
         let (viewport_width, viewport_height) = calculate_viewport_dimensions(config.vertical_fov);
-        let (u, v, w) = calculate_camera_orientation(config.look_from, config.look_at, config.view_up);
+        let (u, v, w) =
+            calculate_camera_orientation(config.look_from, config.look_at, config.view_up);
 
-        let lens_radius = config.aperture/ 2.0;
+        let lens_radius = config.aperture / 2.0;
         let focus_distance = match config.focus_distance {
             Some(distance) => distance,
             None => (config.look_from - config.look_at).length(),
@@ -72,7 +73,11 @@ fn calculate_viewport_dimensions(vertical_fov: f64) -> (f64, f64) {
     (viewport_width, viewport_height)
 }
 
-fn calculate_camera_orientation(look_from: Point3, look_at: Point3, view_up: Vec3) -> (Vec3, Vec3, Vec3) {
+fn calculate_camera_orientation(
+    look_from: Point3,
+    look_at: Point3,
+    view_up: Vec3,
+) -> (Vec3, Vec3, Vec3) {
     let view_direction = look_at - look_from;
     let w = (-view_direction).normalized();
     let u = Vec3::cross(view_up, w).normalized();

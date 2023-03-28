@@ -1,11 +1,11 @@
 use rand::prelude::*;
 use std::ops;
 
-mod point3;
 mod color;
+mod point3;
 
-pub use point3::Point3;
 pub use color::Color;
+pub use point3::Point3;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vec3 {
@@ -14,7 +14,9 @@ pub struct Vec3 {
 
 impl Vec3 {
     pub const fn new(x: f64, y: f64, z: f64) -> Vec3 {
-        Vec3 { components: [x, y, z] }
+        Vec3 {
+            components: [x, y, z],
+        }
     }
 
     pub fn x(&self) -> f64 {
