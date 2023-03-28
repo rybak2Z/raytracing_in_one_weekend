@@ -26,3 +26,6 @@ pub const MINT_SOFT: Color = Color::new(0.38, 0.92, 0.60);
 pub const CYAN_SOFT: Color = Color::new(0.38, 0.92, 0.91);
 pub const PURPLE_SOFT: Color = Color::new(0.78, 0.47, 0.93);
 pub const PINK_SOFT: Color = Color::new(0.92, 0.48, 0.9);
+
+// Other
+pub const SKY: Color = Color::new(0.5, 0.7, 1.0);
