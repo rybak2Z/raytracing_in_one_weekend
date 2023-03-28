@@ -10,6 +10,12 @@ use crate::ray::*;
 use crate::vec3::*;
 use crate::writing::*;
 
+struct RenderingTools<'a> {
+    world: &'a HittableList,
+    camera: &'a Camera,
+    rng: &'a mut ThreadRng,
+}
+
 pub fn render(
     world: &HittableList,
     camera: Camera,
@@ -17,16 +23,19 @@ pub fn render(
     writer_err: &mut BufWriter<StderrLock>,
 ) -> io::Result<()> {
     let mut rng = thread_rng();
+    let mut render_tools = RenderingTools {
+        world,
+        camera: &camera,
+        rng: &mut rng,
+    };
+
     for row in (0..IMAGE_HEIGHT).rev() {
         write_progress_update(row, writer_err)?;
+
         for col in 0..IMAGE_WIDTH {
-            let mut pixel_color = Color::default();
-            for _sample in 0..SAMPLES_PER_PIXEL {
-                let u = (col as f64 + rng.gen::<f64>()) / (IMAGE_WIDTH - 1) as f64;
-                let v = (row as f64 + rng.gen::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
-                let ray = camera.get_ray(u, v);
-                pixel_color += get_ray_color(&ray, world, MAX_DEPTH);
-            }
+            let accumulated_color = accumulate_pixel_color_samples(row, col, &mut render_tools);
+            let mut pixel_color = accumulated_color / SAMPLES_PER_PIXEL as f64;
+            correct_gamma(&mut pixel_color);
             write_pixel(writer, pixel_color)?;
         }
     }
@@ -34,9 +43,29 @@ pub fn render(
     Ok(())
 }
 
+fn accumulate_pixel_color_samples(row: u32, col: u32, render_tools: &mut RenderingTools) -> Color {
+    let mut accumulated_color = Color::default();
+    for _sample in 0..SAMPLES_PER_PIXEL {
+        accumulated_color += calculate_pixel_color(row, col, render_tools);
+    }
+
+    accumulated_color
+}
+
+fn calculate_pixel_color(row: u32, col: u32, render_tools: &mut RenderingTools) -> Color {
+    let (u, v) = get_uv(row, col, render_tools.rng);
+    let ray = render_tools.camera.get_ray(u, v);
+    get_ray_color(&ray, render_tools.world, MAX_DEPTH)
+}
+
+fn get_uv(row: u32, col: u32, rng: &mut ThreadRng) -> (f64, f64) {
+    let u = (col as f64 + rng.gen::<f64>()) / (IMAGE_WIDTH - 1) as f64;
+    let v = (row as f64 + rng.gen::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
+    (u, v)
+}
+
 fn get_ray_color(ray: &Ray, world: &HittableList, depth: i32) -> Color {
-    // If we've exceeded the ray bounce limit, no more light is gathered
-    if depth <= 0 {
+    if depth == 0 {
         return Color::default();
     }
 
@@ -48,7 +77,21 @@ fn get_ray_color(ray: &Ray, world: &HittableList, depth: i32) -> Color {
         return Color::default();
     }
 
+    get_sky_color(ray)
+}
+
+fn get_sky_color(ray: &Ray) -> Color {
     let direction = ray.direction().normalized();
-    let t = 0.5 * (direction.y() + 1.0);
-    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
+    let blend_factor = 0.5 * (direction.y() + 1.0);
+
+    let white_part = (1.0 - blend_factor) * Color::new(1.0, 1.0, 1.0);
+    let blue_part = blend_factor * Color::new(0.5, 0.7, 1.0);
+
+    white_part + blue_part
+}
+
+fn correct_gamma(color: &mut Color) {
+    color.set_r(color.r().sqrt());
+    color.set_g(color.g().sqrt());
+    color.set_b(color.b().sqrt());
 }

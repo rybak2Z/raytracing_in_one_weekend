@@ -24,6 +24,18 @@ impl Color {
         self.rgb[2]
     }
 
+    pub fn set_r(&mut self, new_red: f64) {
+        self.rgb[0] = new_red;
+    }
+
+    pub fn set_g(&mut self, new_green: f64) {
+        self.rgb[1] = new_green;
+    }
+
+    pub fn set_b(&mut self, new_blue: f64) {
+        self.rgb[2] = new_blue;
+    }
+
     pub fn random() -> Color {
         let random_vec = Vec3::random();
         Color::new(random_vec.x(), random_vec.y(), random_vec.z())
@@ -88,5 +100,19 @@ impl ops::MulAssign for Color {
 impl ops::MulAssign<f64> for Color {
     fn mul_assign(&mut self, rhs: f64) {
         *self = *self * rhs;
+    }
+}
+
+impl ops::Div<f64> for Color {
+    type Output = Self;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        self * (1.0 / rhs)
+    }
+}
+
+impl ops::DivAssign<f64> for Color {
+    fn div_assign(&mut self, rhs: f64) {
+        *self = *self / rhs;
     }
 }
