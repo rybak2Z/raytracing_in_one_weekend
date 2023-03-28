@@ -19,8 +19,8 @@ struct RenderingTools<'a> {
 pub fn render(
     world: &HittableList,
     camera: Camera,
-    writer: &mut BufWriter<StdoutLock>,
-    writer_err: &mut BufWriter<StderrLock>,
+    writer: &mut Writer,
+    writer_err: &mut WriterErr,
 ) -> io::Result<()> {
     let mut rng = thread_rng();
     let mut render_tools = RenderingTools {
