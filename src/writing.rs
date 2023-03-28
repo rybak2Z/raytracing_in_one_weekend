@@ -7,6 +7,47 @@ use crate::vec3::Color;
 pub type Writer<'a> = BufWriter<StdoutLock<'a>>;
 pub type WriterErr<'a> = BufWriter<StderrLock<'a>>;
 
+pub struct WritingSynchronizer<'a> {
+    buffer: Vec<(Color, u32)>,
+    next_to_write: u32,
+    writer: BufWriter<StdoutLock<'a>>,
+}
+
+impl WritingSynchronizer<'_> {
+    pub fn new() -> WritingSynchronizer<'static> {
+        let buffer = Vec::with_capacity(16);
+        let next_to_write: u32 = IMAGE_WIDTH * IMAGE_HEIGHT - 1;
+        let stdout = io::stdout().lock();
+        let writer = BufWriter::new(stdout);
+        WritingSynchronizer { buffer, next_to_write, writer }
+    }
+
+    pub fn write(&mut self, pixel_color: Color, row_from_bottom: u32, col: u32) -> io::Result<()> {
+        self.add_to_buffer(pixel_color, row_from_bottom, col);
+
+        self.buffer.sort_by_key(|entry| entry.1);
+        while !self.buffer.is_empty() {
+            let last_index = self.buffer.len() - 1;
+            if self.buffer[last_index].1 != self.next_to_write {
+                break;
+            }
+            let color = self.buffer.pop().unwrap().0;
+            write_pixel(&mut self.writer, color)?;
+            self.next_to_write -= 1;
+        }
+
+        Ok(())
+    }
+
+    fn add_to_buffer(&mut self, pixel_color: Color, row_from_bottom: u32, col: u32) {
+        let row = (IMAGE_HEIGHT - 1) - row_from_bottom;
+        let pixel_index = row * IMAGE_WIDTH + col;
+        // So that the first pixels to be popped are at the end of the vector when sorted
+        let reversed_index = IMAGE_HEIGHT * IMAGE_WIDTH - 1 - pixel_index;
+        self.buffer.push((pixel_color, reversed_index));
+    }
+}
+
 pub fn get_writers() -> (Writer<'static>, WriterErr<'static>) {
     let stdout = io::stdout().lock();
     let writer = BufWriter::new(stdout);
