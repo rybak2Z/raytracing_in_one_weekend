@@ -37,8 +37,7 @@ fn get_ray_color(ray: &Ray, world: &HittableList, depth: i32) -> Color {
         return Color::default();
     }
 
-    let mut hit_record = HitRecord::new();
-    if world.hit(ray, 0.0001, f64::INFINITY, &mut hit_record) {
+    if let Some(hit_record) = world.hit(ray, 0.0001, f64::INFINITY) {
         let (does_hit, scattered_ray, attenuation) = hit_record.material.scatter(ray, &hit_record);
         if does_hit {
             return attenuation * get_ray_color(&scattered_ray, world, depth - 1);
@@ -80,7 +79,7 @@ impl HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool;
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
 pub struct Sphere {
@@ -100,7 +99,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let co = ray.origin() - self.center;
 
         // Quadratic equation
@@ -110,7 +109,7 @@ impl Hittable for Sphere {
         let discriminant = half_b * half_b - a * c;
 
         if discriminant < 0.0 {
-            return false;
+            return None;
         }
 
         // Find the nearest root that lies in the qacceptable range
@@ -119,17 +118,18 @@ impl Hittable for Sphere {
         if root < t_min || t_max < root {
             root = (-half_b + sqrt_discriminant) / a;
             if root < t_min || t_max < root {
-                return false;
+                return None;
             }
         }
 
+        let mut record = HitRecord::new();
         record.t = root;
         record.point = ray.at(record.t);
         let outward_normal = (record.point - self.center) / self.radius;
         record.set_face_normal(ray, outward_normal);
         record.material = Rc::clone(&self.material);
 
-        true
+        Some(record)
     }
 }
 
@@ -148,23 +148,25 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool {
-        let mut temp_record = HitRecord::new();
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut hit_anything = false;
         let mut closest = HitRecord::new();
         closest.t = t_max;
 
         for object in self.objects.iter() {
-            if object.hit(ray, t_min, t_max, &mut temp_record) && temp_record.t < closest.t {
-                hit_anything = true;
-                std::mem::swap(&mut temp_record, &mut closest);
+            let hit_record = object.hit(ray, t_min, t_max);
+            if let Some(record) = hit_record {
+                if record.t < closest.t {
+                    hit_anything = true;
+                    closest = record;
+                }
             }
         }
-        if hit_anything {
-            *record = closest;
-        }
 
-        hit_anything
+        match hit_anything {
+            true => Some(closest),
+            false => None,
+        }
     }
 }
 
