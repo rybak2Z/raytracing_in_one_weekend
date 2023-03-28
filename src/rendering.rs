@@ -22,7 +22,7 @@ pub fn render(
                 let u = (col as f64 + rng.gen::<f64>()) / (IMAGE_WIDTH - 1) as f64;
                 let v = (row as f64 + rng.gen::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
                 let ray = camera.get_ray(u, v);
-                pixel_color += get_ray_color(ray, world, MAX_DEPTH);
+                pixel_color += get_ray_color(&ray, world, MAX_DEPTH);
             }
             write_pixel(writer, pixel_color)?;
         }
@@ -31,7 +31,7 @@ pub fn render(
     Ok(())
 }
 
-fn get_ray_color(ray: Ray, world: &HittableList, depth: i32) -> Color {
+fn get_ray_color(ray: &Ray, world: &HittableList, depth: i32) -> Color {
     // If we've exceeded the ray bounce limit, no more light is gathered
     if depth <= 0 {
         return Color::default();
@@ -41,7 +41,7 @@ fn get_ray_color(ray: Ray, world: &HittableList, depth: i32) -> Color {
     if world.hit(ray, 0.0001, f64::INFINITY, &mut hit_record) {
         let (does_hit, scattered_ray, attenuation) = hit_record.material.scatter(ray, &hit_record);
         if does_hit {
-            return attenuation * get_ray_color(scattered_ray, world, depth - 1);
+            return attenuation * get_ray_color(&scattered_ray, world, depth - 1);
         }
         return Color::default();
     }
@@ -70,7 +70,7 @@ impl HitRecord {
         }
     }
 
-    fn set_face_normal(&mut self, ray: Ray, outward_normal: Vec3) {
+    fn set_face_normal(&mut self, ray: &Ray, outward_normal: Vec3) {
         self.on_front_face = Vec3::dot(ray.direction(), outward_normal) < 0.0;
         self.normal = match self.on_front_face {
             true => outward_normal,
@@ -80,7 +80,7 @@ impl HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool;
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool;
 }
 
 pub struct Sphere {
@@ -100,7 +100,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool {
         let co = ray.origin() - self.center;
 
         // Quadratic equation
@@ -148,7 +148,7 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, ray: Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, record: &mut HitRecord) -> bool {
         let mut temp_record = HitRecord::new();
         let mut hit_anything = false;
         let mut closest = HitRecord::new();
@@ -175,7 +175,7 @@ impl Default for HittableList {
 }
 
 pub trait Material {
-    fn scatter(&self, ray_in: Ray, hit_record: &HitRecord) -> (bool, Ray, Color);
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> (bool, Ray, Color);
 }
 
 pub struct Lambertian {
@@ -189,7 +189,7 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _ray_in: Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
+    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
         let mut scatter_direction = hit_record.normal + Vec3::random_unit_vector();
 
         // Catch degenerate scatter direction
@@ -215,7 +215,7 @@ impl UniformScatter {
 }
 
 impl Material for UniformScatter {
-    fn scatter(&self, _ray_in: Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
+    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
         let mut scatter_direction = Vec3::random_in_hemisphere(hit_record.normal);
 
         // Catch degenerate scatter direction
@@ -243,7 +243,7 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray_in: Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
         let reflected_direction = Vec3::reflect(ray_in.direction(), hit_record.normal);
         let scattered_ray = Ray::new(
             hit_record.point,
@@ -267,7 +267,7 @@ impl Dialectric {
 }
 
 impl Material for Dialectric {
-    fn scatter(&self, ray_in: Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
         let refraction_ratio = match hit_record.on_front_face {
             true => 1.0 / self.refractive_index,
             false => self.refractive_index,
