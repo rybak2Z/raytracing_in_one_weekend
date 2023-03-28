@@ -34,7 +34,10 @@ impl Material for Lambertian {
 
         let scattered_ray = Ray::new(hit_record.point, scatter_direction);
 
-        Some(Scatter { ray: scattered_ray, attenuation: self.albedo })
+        Some(Scatter {
+            ray: scattered_ray,
+            attenuation: self.albedo,
+        })
     }
 }
 
@@ -59,7 +62,10 @@ impl Material for UniformScatter {
 
         let scattered_ray = Ray::new(hit_record.point, scatter_direction);
 
-        Some(Scatter { ray: scattered_ray, attenuation: self.albedo })
+        Some(Scatter {
+            ray: scattered_ray,
+            attenuation: self.albedo,
+        })
     }
 }
 
@@ -87,7 +93,10 @@ impl Material for Metal {
             return None;
         }
 
-        Some(Scatter { ray: scattered_ray, attenuation: self.albedo })
+        Some(Scatter {
+            ray: scattered_ray,
+            attenuation: self.albedo,
+        })
     }
 }
 
@@ -121,15 +130,19 @@ impl Material for Dialectric {
 
         let mut rng = thread_rng();
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
-        let direction = if cannot_refract || Dialectric::reflectance(cos_theta, refraction_ratio) > rng.gen() {
-            Vec3::reflect(unit_direction, hit_record.normal)
-        } else {
-            Vec3::refract(unit_direction, hit_record.normal, refraction_ratio)
-        };
+        let direction =
+            if cannot_refract || Dialectric::reflectance(cos_theta, refraction_ratio) > rng.gen() {
+                Vec3::reflect(unit_direction, hit_record.normal)
+            } else {
+                Vec3::refract(unit_direction, hit_record.normal, refraction_ratio)
+            };
 
         let scattered_ray = Ray::new(hit_record.point, direction);
         let attenuation = Color::new(1.0, 1.0, 1.0);
 
-        Some(Scatter { ray: scattered_ray, attenuation })
+        Some(Scatter {
+            ray: scattered_ray,
+            attenuation,
+        })
     }
 }

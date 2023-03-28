@@ -41,7 +41,13 @@ impl Hittable for Sphere {
     }
 }
 
-fn find_smallest_valid_solution(a: f64, half_b: f64, discriminant: f64, t_min: f64, t_max: f64) -> Option<f64> {
+fn find_smallest_valid_solution(
+    a: f64,
+    half_b: f64,
+    discriminant: f64,
+    t_min: f64,
+    t_max: f64,
+) -> Option<f64> {
     if discriminant < 0.0 {
         return None;
     }
