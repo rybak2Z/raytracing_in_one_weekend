@@ -78,6 +78,12 @@ impl HitRecord {
     }
 }
 
+impl Default for HitRecord {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub trait Hittable {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
@@ -122,7 +128,7 @@ impl Hittable for Sphere {
             }
         }
 
-        let mut record = HitRecord::new();
+        let mut record = HitRecord::default();
         record.t = root;
         record.point = ray.at(record.t);
         let outward_normal = (record.point - self.center) / self.radius;
@@ -150,8 +156,7 @@ impl HittableList {
 impl Hittable for HittableList {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut hit_anything = false;
-        let mut closest = HitRecord::new();
-        closest.t = t_max;
+        let mut closest = HitRecord { t: t_max, ..Default::default() };
 
         for object in self.objects.iter() {
             let hit_record = object.hit(ray, t_min, t_max);
