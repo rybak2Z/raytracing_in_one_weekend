@@ -1,7 +1,9 @@
 pub mod camera;
 pub mod config;
+pub mod material;
 pub mod ray;
 pub mod rendering;
+pub mod sphere;
 pub mod vec3;
 pub mod world_building;
 pub mod writing;

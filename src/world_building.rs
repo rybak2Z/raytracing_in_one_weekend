@@ -1,7 +1,7 @@
 use rand::prelude::*;
 use std::rc::Rc;
 
-use crate::{camera::CameraConfiguration, rendering::*, vec3::*};
+use crate::{camera::CameraConfiguration, material::*, rendering::*, sphere::Sphere, vec3::*};
 
 pub enum WorldType {
     Custom1,
