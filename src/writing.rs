@@ -32,9 +32,11 @@ pub fn finish_writers(writer: &mut Writer, writer_err: &mut WriterErr) -> io::Re
 }
 
 pub fn write_progress_update(row: u32, writer_err: &mut WriterErr) -> io::Result<()> {
+    let relative_progress = (IMAGE_HEIGHT - row) as f64 / IMAGE_HEIGHT as f64;
     write!(
         writer_err,
-        "\rScanlines remaining: {:0>width$}",
+        "\rRendering... {0:.2} % (scanlines remaining: {1:0>width$})",
+        relative_progress * 100.0,
         row,
         width = PROGRESS_NUM_WIDTH as usize
     )?;
