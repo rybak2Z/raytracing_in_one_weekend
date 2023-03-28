@@ -1,3 +1,5 @@
+use rand::prelude::*;
+
 use crate::ray::Ray;
 use crate::rendering::HitRecord;
 use crate::vec3::{Color, Vec3};
@@ -97,6 +99,13 @@ impl Dialectric {
     pub fn new(refractive_index: f64) -> Dialectric {
         Dialectric { refractive_index }
     }
+
+    fn reflectance(cosine: f64, refraction_ratio: f64) -> f64 {
+        // Use Schlick's approximation for reflectance
+        let r0 = (1.0 - refraction_ratio) / (1.0 + refraction_ratio);
+        let r0 = r0 * r0;
+        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    }
 }
 
 impl Material for Dialectric {
@@ -110,8 +119,9 @@ impl Material for Dialectric {
         let cos_theta = 1.0_f64.min(Vec3::dot(-unit_direction, hit_record.normal));
         let sin_theta = (1.0_f64 - cos_theta * cos_theta).sqrt();
 
+        let mut rng = thread_rng();
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
-        let direction = if cannot_refract {
+        let direction = if cannot_refract || Dialectric::reflectance(cos_theta, refraction_ratio) > rng.gen() {
             Vec3::reflect(unit_direction, hit_record.normal)
         } else {
             Vec3::refract(unit_direction, hit_record.normal, refraction_ratio)
