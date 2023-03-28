@@ -29,7 +29,8 @@ impl Point3 {
         self.x().abs() < s && self.y().abs() < s && self.z().abs() < s
     }
 
-    pub fn pos_vec(&self) -> Vec3 {  // position vector
+    pub fn pos_vec(&self) -> Vec3 {
+        // position vector
         Vec3::new(self.x(), self.y(), self.z())
     }
 

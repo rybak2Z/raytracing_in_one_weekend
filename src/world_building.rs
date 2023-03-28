@@ -1,7 +1,7 @@
-use std::rc::Rc;
 use rand::prelude::*;
+use std::rc::Rc;
 
-use crate::{rendering::*, vec3::*, camera::CameraConfiguration};
+use crate::{camera::CameraConfiguration, rendering::*, vec3::*};
 
 pub enum WorldType {
     Custom1,
@@ -14,11 +14,7 @@ pub fn build_custom_1() -> (HittableList, CameraConfiguration) {
     let material_left = Rc::new(Dialectric::new(1.5));
     let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
 
-    let sphere_ground = Sphere::new(
-        Point3::new(0.0, -100.5, -1.0),
-        100.0,
-        material_ground,
-    );
+    let sphere_ground = Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, material_ground);
     let sphere_center = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, material_center);
     let sphere_left = Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, material_left);
     let sphere_right = Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, material_right);
@@ -46,11 +42,7 @@ pub fn build_random_1() -> (HittableList, CameraConfiguration) {
     let mut world = HittableList::new();
 
     let ground_material = Rc::new(Lambertian::new(Color::new(0.62, 0.76, 0.76)));
-    let ground_sphere = Sphere::new(
-        Point3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        ground_material,
-    );
+    let ground_sphere = Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, ground_material);
     world.add(Rc::new(ground_sphere));
 
     let mut rng = thread_rng();

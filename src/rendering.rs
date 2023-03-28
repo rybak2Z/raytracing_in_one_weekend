@@ -175,11 +175,7 @@ impl Default for HittableList {
 }
 
 pub trait Material {
-    fn scatter(
-        &self,
-        ray_in: Ray,
-        hit_record: &HitRecord,
-    ) -> (bool, Ray, Color);
+    fn scatter(&self, ray_in: Ray, hit_record: &HitRecord) -> (bool, Ray, Color);
 }
 
 pub struct Lambertian {
@@ -193,11 +189,7 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(
-        &self,
-        _ray_in: Ray,
-        hit_record: &HitRecord,
-    ) -> (bool, Ray, Color) {
+    fn scatter(&self, _ray_in: Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
         let mut scatter_direction = hit_record.normal + Vec3::random_unit_vector();
 
         // Catch degenerate scatter direction
@@ -223,11 +215,7 @@ impl UniformScatter {
 }
 
 impl Material for UniformScatter {
-    fn scatter(
-        &self,
-        _ray_in: Ray,
-        hit_record: &HitRecord,
-    ) -> (bool, Ray, Color) {
+    fn scatter(&self, _ray_in: Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
         let mut scatter_direction = Vec3::random_in_hemisphere(hit_record.normal);
 
         // Catch degenerate scatter direction
@@ -255,11 +243,7 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(
-        &self,
-        ray_in: Ray,
-        hit_record: &HitRecord,
-    ) -> (bool, Ray, Color) {
+    fn scatter(&self, ray_in: Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
         let reflected_direction = Vec3::reflect(ray_in.direction(), hit_record.normal);
         let scattered_ray = Ray::new(
             hit_record.point,
@@ -283,11 +267,7 @@ impl Dialectric {
 }
 
 impl Material for Dialectric {
-    fn scatter(
-        &self,
-        ray_in: Ray,
-        hit_record: &HitRecord,
-    ) -> (bool, Ray, Color) {
+    fn scatter(&self, ray_in: Ray, hit_record: &HitRecord) -> (bool, Ray, Color) {
         let refraction_ratio = match hit_record.on_front_face {
             true => 1.0 / self.refractive_index,
             false => self.refractive_index,
