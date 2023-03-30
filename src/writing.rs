@@ -92,9 +92,6 @@ impl WritingSynchronizer<'_> {
             return Err(Error::new(ErrorKind::Other, "Error: Failed to write all data to output."));
         }
 
-        self.writer_err.write_all(b"\nDone.\n")?;
-        self.writer_err.flush()?;
-
         Ok(())
     }
 }
