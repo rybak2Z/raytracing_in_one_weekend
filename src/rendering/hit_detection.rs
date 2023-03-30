@@ -1,10 +1,10 @@
-use super::{Color, Point3, Ray, Rc, Vec3};
+use super::{Color, Point3, Ray, Vec3};
 use crate::material::{Lambertian, Material};
 
 pub struct HitRecord {
     pub point: Point3,
     pub normal: Vec3,
-    pub material: Rc<dyn Material>,
+    pub material: Box<dyn Material>,
     pub t: f64,
     pub on_front_face: bool,
 }
@@ -14,7 +14,7 @@ impl HitRecord {
         HitRecord {
             point: Point3::default(),
             normal: Vec3::default(),
-            material: Rc::new(Lambertian::new(Color::default())),
+            material: Box::new(Lambertian::new(Color::default())),
             t: 0.0,
             on_front_face: true,
         }
@@ -35,12 +35,30 @@ impl Default for HitRecord {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: CloneHittable + Send + Sync {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
+// from https://users.rust-lang.org/t/solved-is-it-possible-to-clone-a-boxed-trait-object/1714/7
+pub trait CloneHittable {
+    fn clone_hittable<'a>(&self) -> Box<dyn Hittable>;
+}
+
+impl<T: Hittable + Clone + 'static> CloneHittable for T {
+    fn clone_hittable<'a>(&self) -> Box<dyn Hittable> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn Hittable> {
+    fn clone(&self) -> Self {
+        self.clone_hittable()
+    }
+}
+
+#[derive(Clone)]
 pub struct HittableList {
-    objects: Vec<Rc<dyn Hittable>>,
+    objects: Vec<Box<dyn Hittable>>,
 }
 
 impl HittableList {
@@ -48,7 +66,7 @@ impl HittableList {
         HittableList { objects: vec![] }
     }
 
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
+    pub fn add(&mut self, object: Box<dyn Hittable>) {
         self.objects.push(object);
     }
 }
