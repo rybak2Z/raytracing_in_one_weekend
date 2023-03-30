@@ -41,11 +41,11 @@ pub trait Hittable: CloneHittable + Send + Sync {
 
 // from https://users.rust-lang.org/t/solved-is-it-possible-to-clone-a-boxed-trait-object/1714/7
 pub trait CloneHittable {
-    fn clone_hittable<'a>(&self) -> Box<dyn Hittable>;
+    fn clone_hittable(&self) -> Box<dyn Hittable>;
 }
 
 impl<T: Hittable + Clone + 'static> CloneHittable for T {
-    fn clone_hittable<'a>(&self) -> Box<dyn Hittable> {
+    fn clone_hittable(&self) -> Box<dyn Hittable> {
         Box::new(self.clone())
     }
 }
