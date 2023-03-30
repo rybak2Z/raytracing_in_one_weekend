@@ -1,5 +1,6 @@
 pub mod camera;
 pub mod config;
+pub mod coordinate_iterator;
 pub mod material;
 pub mod ray;
 pub mod rendering;
