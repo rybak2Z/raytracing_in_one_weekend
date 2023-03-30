@@ -77,7 +77,7 @@ impl WritingSynchronizer<'_> {
         let color = self.buffer.pop().unwrap().0;
         write_pixel(&mut self.writer, color)?;
         self.next_to_write -= 1;
-    
+
         Ok(true)
     }
 
@@ -87,9 +87,12 @@ impl WritingSynchronizer<'_> {
 
     pub fn finish_writing(&mut self) -> io::Result<()> {
         self.writer.flush()?;
-        
+
         if !self.all_data_written() {
-            return Err(Error::new(ErrorKind::Other, "Error: Failed to write all data to output."));
+            return Err(Error::new(
+                ErrorKind::Other,
+                "Error: Failed to write all data to output.",
+            ));
         }
 
         Ok(())
@@ -103,10 +106,7 @@ pub fn write_meta_data() -> io::Result<()> {
     )
 }
 
-pub fn write_progress_update(
-    relative_progress: f64,
-    writer_err: &mut WriterErr,
-) -> io::Result<()> {
+pub fn write_progress_update(relative_progress: f64, writer_err: &mut WriterErr) -> io::Result<()> {
     write!(
         writer_err,
         "\rRendering... {0:.2} %",
