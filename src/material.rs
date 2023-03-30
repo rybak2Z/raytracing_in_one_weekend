@@ -9,10 +9,28 @@ pub struct Scatter {
     pub attenuation: Color,
 }
 
-pub trait Material {
+pub trait Material: CloneMaterial + Send + Sync {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<Scatter>;
 }
 
+// from https://users.rust-lang.org/t/solved-is-it-possible-to-clone-a-boxed-trait-object/1714/7
+pub trait CloneMaterial {
+    fn clone_material<'a>(&self) -> Box<dyn Material>;
+}
+
+impl<T: Material + Clone + 'static> CloneMaterial for T {
+    fn clone_material<'a>(&self) -> Box<dyn Material> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn Material> {
+    fn clone(&self) -> Self {
+        self.clone_material()
+    }
+}
+
+#[derive(Clone)]
 pub struct Lambertian {
     albedo: Color,
 }
@@ -41,6 +59,7 @@ impl Material for Lambertian {
     }
 }
 
+#[derive(Clone)]
 pub struct UniformScatter {
     albedo: Color,
 }
@@ -69,6 +88,7 @@ impl Material for UniformScatter {
     }
 }
 
+#[derive(Clone)]
 pub struct Metal {
     albedo: Color,
     fuzziness: f64,
@@ -100,6 +120,7 @@ impl Material for Metal {
     }
 }
 
+#[derive(Clone)]
 pub struct Dialectric {
     refractive_index: f64,
 }
