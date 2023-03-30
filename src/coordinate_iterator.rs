@@ -14,7 +14,7 @@ impl CoordinateIterator {
     }
 
     pub fn next(&mut self) -> Option<(u32, u32)> {
-        if self.col as u32 == IMAGE_WIDTH- 1 && self.row == 0 {
+        if self.col as u32 == IMAGE_WIDTH - 1 && self.row == 0 {
             return None;
         }
 
