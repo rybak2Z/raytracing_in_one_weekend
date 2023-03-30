@@ -15,11 +15,11 @@ pub trait Material: CloneMaterial + Send + Sync {
 
 // from https://users.rust-lang.org/t/solved-is-it-possible-to-clone-a-boxed-trait-object/1714/7
 pub trait CloneMaterial {
-    fn clone_material<'a>(&self) -> Box<dyn Material>;
+    fn clone_material(&self) -> Box<dyn Material>;
 }
 
 impl<T: Material + Clone + 'static> CloneMaterial for T {
-    fn clone_material<'a>(&self) -> Box<dyn Material> {
+    fn clone_material(&self) -> Box<dyn Material> {
         Box::new(self.clone())
     }
 }
