@@ -12,8 +12,10 @@ pub const PROGRESS_NUM_WIDTH: u32 = IMAGE_HEIGHT.ilog10() + 1;
 pub const WORLD_TYPE: WorldType = WorldType::Custom1;
 
 // Rendering
-pub const SAMPLES_PER_PIXEL: u32 = 100;
-pub const MAX_DEPTH: i32 = 15;
+pub const SAMPLES_PER_PIXEL: u32 = 500;
+pub const MAX_DEPTH: i32 = 50;
+pub const THREADS: u32 = 6; // total number (0 won't work)
+pub const USE_MAIN_THREAD_FOR_RENDERING: bool = false;
 
 // Camera
 pub const USE_WORLD_SPECIFIC_CAM: bool = true; // if false, the settings in here are used
