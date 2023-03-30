@@ -3,14 +3,15 @@ use crate::ray::Ray;
 use crate::rendering::*;
 use crate::vec3::*;
 
+#[derive(Clone)]
 pub struct Sphere {
     center: Point3,
     radius: f64,
-    material: Rc<dyn Material>,
+    material: Box<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
+    pub fn new(center: Point3, radius: f64, material: Box<dyn Material>) -> Sphere {
         Sphere {
             center,
             radius,
@@ -35,7 +36,7 @@ impl Hittable for Sphere {
         record.point = ray.at(record.t);
         let outward_normal = (record.point - self.center) / self.radius;
         record.set_face_normal(ray, outward_normal);
-        record.material = Rc::clone(&self.material);
+        record.material = self.material.clone();
 
         Some(record)
     }
