@@ -15,7 +15,7 @@ pub const WORLD_TYPE: WorldType = WorldType::Custom1;
 // Rendering
 pub const SAMPLES_PER_PIXEL: u32 = 500;
 pub const MAX_DEPTH: i32 = 50;
-pub const THREADS: u32 = 6; // total number (0 won't work)
+pub const THREADS: u32 = 1; // total number (0 won't work)
 pub const USE_MAIN_THREAD_FOR_RENDERING: bool = false;
 pub const UPDATE_PROGRESS_EVERY_N_PIXELS: u32 = 10;
 pub const WRITING_BUFFER_START_CAPACITY: usize = 32;
