@@ -1,7 +1,7 @@
-pub use std::io;
+pub use std::io::{self, Error, ErrorKind};
 use std::io::{BufWriter, StderrLock, StdoutLock, Write};
 
-use crate::config::{FILE_TYPE, IMAGE_HEIGHT, IMAGE_WIDTH, MAX_COLOR, PROGRESS_NUM_WIDTH};
+use crate::config::*;
 use crate::vec3::Color;
 
 pub type Writer<'a> = BufWriter<StdoutLock<'a>>;
@@ -9,31 +9,38 @@ pub type WriterErr<'a> = BufWriter<StderrLock<'a>>;
 
 pub struct WritingSynchronizer<'a> {
     buffer: Vec<(Color, u32)>,
-    next_to_write: u32,
+    next_to_write: i32,
     writer: BufWriter<StdoutLock<'a>>,
+    writer_err: BufWriter<StderrLock<'a>>,
+    pixels_written: u32,
+    update_counter: u32,
+    update_every: u32,
 }
 
 impl WritingSynchronizer<'_> {
     pub fn new() -> WritingSynchronizer<'static> {
-        let buffer = Vec::with_capacity(16);
-        let next_to_write: u32 = IMAGE_WIDTH * IMAGE_HEIGHT - 1;
-        let stdout = io::stdout().lock();
-        let writer = BufWriter::new(stdout);
-        WritingSynchronizer { buffer, next_to_write, writer }
+        WritingSynchronizer {
+            buffer: Vec::with_capacity(WRITING_BUFFER_START_CAPACITY),
+            next_to_write: (TOTAL_NUM_PIXELS - 1) as i32,
+            writer: BufWriter::new(io::stdout().lock()),
+            writer_err: BufWriter::new(io::stderr().lock()),
+            pixels_written: 0,
+            update_counter: 0,
+            update_every: UPDATE_PROGRESS_EVERY_N_PIXELS,
+        }
     }
 
     pub fn write(&mut self, pixel_color: Color, row_from_bottom: u32, col: u32) -> io::Result<()> {
-        self.add_to_buffer(pixel_color, row_from_bottom, col);
+        self.print_progress()?;
 
+        self.add_to_buffer(pixel_color, row_from_bottom, col);
         self.buffer.sort_by_key(|entry| entry.1);
+
         while !self.buffer.is_empty() {
-            let last_index = self.buffer.len() - 1;
-            if self.buffer[last_index].1 != self.next_to_write {
+            let success = self.try_to_write()?;
+            if !success {
                 break;
             }
-            let color = self.buffer.pop().unwrap().0;
-            write_pixel(&mut self.writer, color)?;
-            self.next_to_write -= 1;
         }
 
         Ok(())
@@ -42,44 +49,71 @@ impl WritingSynchronizer<'_> {
     fn add_to_buffer(&mut self, pixel_color: Color, row_from_bottom: u32, col: u32) {
         let row = (IMAGE_HEIGHT - 1) - row_from_bottom;
         let pixel_index = row * IMAGE_WIDTH + col;
-        // So that the first pixels to be popped are at the end of the vector when sorted
-        let reversed_index = IMAGE_HEIGHT * IMAGE_WIDTH - 1 - pixel_index;
+
+        // So that the first pixels that should be written are at the end of the vector when sorted (for pop())
+        let reversed_index = TOTAL_NUM_PIXELS - 1 - pixel_index;
+
         self.buffer.push((pixel_color, reversed_index));
+    }
+
+    fn print_progress(&mut self) -> io::Result<()> {
+        self.update_counter += 1;
+        self.pixels_written += 1;
+        if self.update_counter % self.update_every == 0 {
+            let relative_progress = self.pixels_written as f64 / TOTAL_NUM_PIXELS as f64;
+            write_progress_update(relative_progress, &mut self.writer_err)?;
+            self.update_counter = 0;
+        }
+
+        Ok(())
+    }
+
+    fn try_to_write(&mut self) -> io::Result<bool> {
+        let next_pixel_index = self.buffer[self.buffer.len() - 1].1;
+        if next_pixel_index != self.next_to_write as u32 {
+            return Ok(false);
+        }
+
+        let color = self.buffer.pop().unwrap().0;
+        write_pixel(&mut self.writer, color)?;
+        self.next_to_write -= 1;
+    
+        Ok(true)
+    }
+
+    pub fn all_data_written(&self) -> bool {
+        self.buffer.is_empty() && self.next_to_write == -1
+    }
+
+    pub fn finish_writing(&mut self) -> io::Result<()> {
+        self.writer.flush()?;
+        
+        if !self.all_data_written() {
+            return Err(Error::new(ErrorKind::Other, "Error: Failed to write all data to output."));
+        }
+
+        self.writer_err.write_all(b"\nDone.\n")?;
+        self.writer_err.flush()?;
+
+        Ok(())
     }
 }
 
-pub fn get_writers() -> (Writer<'static>, WriterErr<'static>) {
-    let stdout = io::stdout().lock();
-    let writer = BufWriter::new(stdout);
-
-    let stderr = io::stderr().lock();
-    let writer_err = BufWriter::new(stderr);
-
-    (writer, writer_err)
-}
-
-pub fn write_meta_data(writer: &mut Writer) -> io::Result<()> {
+pub fn write_meta_data() -> io::Result<()> {
     write!(
-        writer,
+        std::io::stdout(),
         "{FILE_TYPE}\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n{MAX_COLOR}\n"
     )
 }
 
-pub fn finish_writers(writer: &mut Writer, writer_err: &mut WriterErr) -> io::Result<()> {
-    writer.flush()?;
-    writer_err.write_all(b"\nDone.\n")?;
-    writer_err.flush()?;
-    Ok(())
-}
-
-pub fn write_progress_update(row: u32, writer_err: &mut WriterErr) -> io::Result<()> {
-    let relative_progress = (IMAGE_HEIGHT - row) as f64 / IMAGE_HEIGHT as f64;
+pub fn write_progress_update(
+    relative_progress: f64,
+    writer_err: &mut WriterErr,
+) -> io::Result<()> {
     write!(
         writer_err,
-        "\rRendering... {0:.2} % (scanlines remaining: {1:0>width$})",
+        "\rRendering... {0:.2} %",
         relative_progress * 100.0,
-        row,
-        width = PROGRESS_NUM_WIDTH as usize
     )?;
     writer_err.flush()?;
     Ok(())
