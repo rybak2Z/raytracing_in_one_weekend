@@ -1,11 +1,17 @@
 use rand::prelude::*;
 pub use std::rc::Rc;
+use std::sync::{
+    mpsc::{self, Receiver, Sender},
+    Arc, Mutex,
+};
+use std::thread::{self, JoinHandle};
 
 mod hit_detection;
 pub use hit_detection::*;
 
 use crate::camera::Camera;
 use crate::config::*;
+use crate::coordinate_iterator::CoordinateIterator;
 use crate::ray::*;
 use crate::vec3::*;
 use crate::writing::*;
@@ -13,47 +19,134 @@ use crate::writing::*;
 struct RenderingTools<'a> {
     world: &'a HittableList,
     camera: &'a Camera,
-    rng: &'a mut ThreadRng,
+    rng: ThreadRng,
 }
 
-pub fn render(
-    world: &HittableList,
-    camera: Camera,
-    writer: &mut Writer,
-    writer_err: &mut WriterErr,
-) -> io::Result<()> {
-    let mut rng = thread_rng();
-    let mut render_tools = RenderingTools {
-        world,
-        camera: &camera,
-        rng: &mut rng,
-    };
-
-    for row in (0..IMAGE_HEIGHT).rev() {
-        write_progress_update(row, writer_err)?;
-
-        for col in 0..IMAGE_WIDTH {
-            let accumulated_color = accumulate_pixel_color_samples(row, col, &mut render_tools);
-            let mut pixel_color = accumulated_color / SAMPLES_PER_PIXEL as f64;
-            correct_gamma(&mut pixel_color);
-            write_pixel(writer, pixel_color)?;
+impl RenderingTools<'_> {
+    pub fn new<'a>(world: &'a HittableList, camera: &'a Camera) -> RenderingTools<'a> {
+        RenderingTools {
+            world,
+            camera,
+            rng: thread_rng(),
         }
+    }
+}
+
+pub fn render(world: HittableList, camera: Camera) -> io::Result<()> {
+    let coordinate_iterator = Arc::new(Mutex::new(CoordinateIterator::new()));
+    let (tx, rx) = mpsc::channel::<(Color, (u32, u32))>();
+
+    let mut handles: Vec<JoinHandle<()>> = vec![];
+    for _ in 0..(THREADS - 1) {
+        let world_copy = world.clone();
+        let camera_copy = camera.clone();
+        let tx_copy = tx.clone();
+        let shared_iterator = Arc::clone(&coordinate_iterator);
+
+        let handle = thread::spawn(move || {
+            do_work(world_copy, camera_copy, shared_iterator, tx_copy);
+        });
+
+        handles.push(handle);
+    }
+
+    let mut writing_sync = WritingSynchronizer::new();
+    main_thread_work(world, camera, &mut writing_sync, coordinate_iterator, &rx)?;
+
+    finish(handles, writing_sync, rx, tx)?;
+
+    Ok(())
+}
+
+fn do_work(
+    world: HittableList,
+    camera: Camera,
+    shared_iterator: Arc<Mutex<CoordinateIterator>>,
+    tx: Sender<(Color, (u32, u32))>,
+) {
+    let mut render_tools = RenderingTools::new(&world, &camera);
+
+    while let Some((row, col)) = get_next_coordinates(&shared_iterator) {
+        let pixel_color = calculate_pixel_color(row, col, &mut render_tools);
+        tx.send((pixel_color, (row, col))).unwrap();
+    }
+}
+
+fn main_thread_work(
+    world: HittableList,
+    camera: Camera,
+    writing_sync: &mut WritingSynchronizer,
+    shared_iterator: Arc<Mutex<CoordinateIterator>>,
+    rx: &Receiver<(Color, (u32, u32))>,
+) -> io::Result<()> {
+    let mut render_tools = RenderingTools::new(&world, &camera);
+
+    while !writing_sync.all_data_written() {
+        while let Ok((color, (row, col))) = rx.try_recv() {
+            writing_sync.write(color, row, col)?;
+        }
+
+        if !USE_MAIN_THREAD_FOR_RENDERING && THREADS > 1 {
+            continue;
+        }
+
+        let (row, col) = match get_next_coordinates(&shared_iterator) {
+            Some(c) => (c.0, c.1),
+            None => break,
+        };
+        let pixel_color = calculate_pixel_color(row, col, &mut render_tools);
+
+        writing_sync.write(pixel_color, row, col)?;
     }
 
     Ok(())
 }
 
+fn get_next_coordinates(shared_iterator: &Arc<Mutex<CoordinateIterator>>) -> Option<(u32, u32)> {
+    let mut coordinate_iterator = shared_iterator.lock().unwrap();
+    let coords = coordinate_iterator.next()?;
+    let (row, col) = coords;
+    Some((row, col))
+}
+
+fn finish(
+    handles: Vec<JoinHandle<()>>,
+    mut writing_sync: WritingSynchronizer,
+    rx: Receiver<(Color, (u32, u32))>,
+    tx: Sender<(Color, (u32, u32))>,
+) -> io::Result<()> {
+    for handle in handles {
+        handle.join().unwrap();
+    }
+
+    for (color, (row, col)) in rx.try_iter() {
+        writing_sync.write(color, row, col)?;
+    }
+    drop(tx); // to keep channel open until now
+
+    writing_sync.finish_writing()?;
+
+    Ok(())
+}
+
+fn calculate_pixel_color(row: u32, col: u32, render_tools: &mut RenderingTools) -> Color {
+    let accumulated_color = accumulate_pixel_color_samples(row, col, render_tools);
+    let mut pixel_color = accumulated_color / SAMPLES_PER_PIXEL as f64;
+    correct_gamma(&mut pixel_color);
+    pixel_color
+}
+
 fn accumulate_pixel_color_samples(row: u32, col: u32, render_tools: &mut RenderingTools) -> Color {
     let mut accumulated_color = Color::default();
     for _sample in 0..SAMPLES_PER_PIXEL {
-        accumulated_color += calculate_pixel_color(row, col, render_tools);
+        accumulated_color += calculate_sample(row, col, render_tools);
     }
 
     accumulated_color
 }
 
-fn calculate_pixel_color(row: u32, col: u32, render_tools: &mut RenderingTools) -> Color {
-    let (u, v) = get_uv(row, col, render_tools.rng);
+fn calculate_sample(row: u32, col: u32, render_tools: &mut RenderingTools) -> Color {
+    let (u, v) = get_uv(row, col, &mut render_tools.rng);
     let ray = render_tools.camera.get_ray(u, v);
     get_ray_color(&ray, render_tools.world, MAX_DEPTH)
 }
