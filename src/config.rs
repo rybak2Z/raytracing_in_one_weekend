@@ -8,20 +8,16 @@ use std::io::{self, ErrorKind::InvalidData};
 
 const CONFIG_PATH: &str = "config.toml";
 
-pub static CONFIG: OnceCell<Configuration> = OnceCell::new();
-
-pub struct Configuration {
-    aspect_ratio: f64,
-    image_width: u32,
-    image_height: u32,
-    pixels_total: u32,
-    samples_per_pixel: u32,
-    max_child_rays: u32,
-    threads: u32,
-    main_thread_rendering: bool,
-    update_every_n_pixels: u32,
-    writing_buffer_start_capacity: u32,
-}
+pub static ASPECT_RATIO: OnceCell<f64> = OnceCell::new();
+pub static IMAGE_WIDTH: OnceCell<u32> = OnceCell::new();
+pub static IMAGE_HEIGHT: OnceCell<u32> = OnceCell::new();
+pub static PIXELS_TOTAL: OnceCell<u32> = OnceCell::new();
+pub static SAMPLES_PER_PIXEL: OnceCell<u32> = OnceCell::new();
+pub static MAX_CHILD_RAYS: OnceCell<u32> = OnceCell::new();
+pub static THREADS: OnceCell<u32> = OnceCell::new();
+pub static USE_MAIN_THREAD_FOR_RENDERING: OnceCell<bool> = OnceCell::new();
+pub static UPDATE_EVERY_N_PIXELS: OnceCell<u32> = OnceCell::new();
+pub static WRITING_BUFFER_START_CAPACITY: OnceCell<usize> = OnceCell::new();
 
 #[derive(Deserialize, Debug)]
 struct TomlConfiguration {
@@ -43,7 +39,7 @@ struct TomlRenderingConfiguration {
     threads: u32,
     main_thread_for_render: bool,
     update_frequency: u32,
-    writing_buffer_capacity: u32,
+    writing_buffer_capacity: usize,
 }
 
 fn err_invalid_data(message: &str) -> io::Error {
@@ -106,21 +102,20 @@ pub fn generate_config() -> io::Result<()> {
     let update_frequency = rendering.update_frequency;
     let writing_buffer_capacity = rendering.writing_buffer_capacity;
 
-    let config = Configuration {
-        aspect_ratio,
-        image_width: width,
-        image_height: height,
-        pixels_total,
-        samples_per_pixel,
-        max_child_rays: max_child_ray_depth,
-        threads,
-        main_thread_rendering: main_thread_for_render,
-        update_every_n_pixels: update_frequency,
-        writing_buffer_start_capacity: writing_buffer_capacity,
-    };
+    let successes = [
+        ASPECT_RATIO.set(aspect_ratio).is_ok(),
+        IMAGE_WIDTH.set(width).is_ok(),
+        IMAGE_HEIGHT.set(height).is_ok(),
+        PIXELS_TOTAL.set(pixels_total).is_ok(),
+        SAMPLES_PER_PIXEL.set(samples_per_pixel).is_ok(),
+        MAX_CHILD_RAYS.set(max_child_ray_depth).is_ok(),
+        THREADS.set(threads).is_ok(),
+        USE_MAIN_THREAD_FOR_RENDERING.set(main_thread_for_render).is_ok(),
+        UPDATE_EVERY_N_PIXELS.set(update_frequency).is_ok(),
+        WRITING_BUFFER_START_CAPACITY.set(writing_buffer_capacity).is_ok(),
+    ];
 
-    let result = CONFIG.set(config);
-    if result.is_err() {
+    if successes.iter().any(|success| !success) {
         return Err(io::Error::new(
             io::ErrorKind::Other,
             "An unexpected error occured.",
@@ -130,42 +125,42 @@ pub fn generate_config() -> io::Result<()> {
     Ok(())
 }
 
-// Image
-pub const ASCPECT_RATIO: f64 = 3.0 / 2.0;
-pub const IMAGE_WIDTH: u32 = 100;
-pub const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASCPECT_RATIO) as u32;
-pub const PROGRESS_NUM_WIDTH: u32 = IMAGE_HEIGHT.ilog10() + 1;
-pub const TOTAL_NUM_PIXELS: u32 = IMAGE_HEIGHT * IMAGE_WIDTH;
+// // Image
+// pub const ASCPECT_RATIO: f64 = 3.0 / 2.0;
+// pub const IMAGE_WIDTH: u32 = 100;
+// pub const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASCPECT_RATIO) as u32;
+// pub const PROGRESS_NUM_WIDTH: u32 = IMAGE_HEIGHT.ilog10() + 1;
+// pub const TOTAL_NUM_PIXELS: u32 = IMAGE_HEIGHT * IMAGE_WIDTH;
 
-// World
-pub const WORLD_TYPE: WorldType = WorldType::Custom1;
+// // World
+// pub const WORLD_TYPE: WorldType = WorldType::Custom1;
 
-// Rendering
-pub const SAMPLES_PER_PIXEL: u32 = 500;
-pub const MAX_DEPTH: i32 = 50;
-pub const THREADS: u32 = 1; // total number (0 won't work)
-pub const USE_MAIN_THREAD_FOR_RENDERING: bool = false;
-pub const UPDATE_PROGRESS_EVERY_N_PIXELS: u32 = 10;
-pub const WRITING_BUFFER_START_CAPACITY: usize = 32;
+// // Rendering
+// pub const SAMPLES_PER_PIXEL: u32 = 500;
+// pub const MAX_DEPTH: i32 = 50;
+// pub const THREADS: u32 = 1; // total number (0 won't work)
+// pub const USE_MAIN_THREAD_FOR_RENDERING: bool = false;
+// pub const UPDATE_PROGRESS_EVERY_N_PIXELS: u32 = 10;
+// pub const WRITING_BUFFER_START_CAPACITY: usize = 32;
 
-// Camera
-pub const USE_WORLD_SPECIFIC_CAM: bool = true; // if false, the settings in here are used
-const LOOK_FROM: Point3 = Point3::new(13.0, 2.0, 3.0);
-const LOOK_AT: Point3 = Point3::new(0.0, 0.0, 0.0);
-const VIEW_UP: Vec3 = Vec3::new(0.0, 1.0, 0.0);
-const VERTICAL_FOV: f64 = 20.0; // in degrees
-const APERTURE: f64 = 0.1;
-const FOCUS_DISTANCE: Option<f64> = Some(10.0);
-const FOCAL_LENGTH: f64 = 1.0;
-pub const CAMERA_CONFIG: CameraConfiguration = CameraConfiguration {
-    look_from: LOOK_FROM,
-    look_at: LOOK_AT,
-    view_up: VIEW_UP,
-    vertical_fov: VERTICAL_FOV,
-    aperture: APERTURE,
-    focus_distance: FOCUS_DISTANCE,
-    focal_length: FOCAL_LENGTH,
-};
+// // Camera
+// pub const USE_WORLD_SPECIFIC_CAM: bool = true; // if false, the settings in here are used
+// const LOOK_FROM: Point3 = Point3::new(13.0, 2.0, 3.0);
+// const LOOK_AT: Point3 = Point3::new(0.0, 0.0, 0.0);
+// const VIEW_UP: Vec3 = Vec3::new(0.0, 1.0, 0.0);
+// const VERTICAL_FOV: f64 = 20.0; // in degrees
+// const APERTURE: f64 = 0.1;
+// const FOCUS_DISTANCE: Option<f64> = Some(10.0);
+// const FOCAL_LENGTH: f64 = 1.0;
+// pub const CAMERA_CONFIG: CameraConfiguration = CameraConfiguration {
+//     look_from: LOOK_FROM,
+//     look_at: LOOK_AT,
+//     view_up: VIEW_UP,
+//     vertical_fov: VERTICAL_FOV,
+//     aperture: APERTURE,
+//     focus_distance: FOCUS_DISTANCE,
+//     focal_length: FOCAL_LENGTH,
+// };
 
 // File format
 pub const FILE_TYPE: &str = "P3";
