@@ -1,6 +1,5 @@
 use crate::config::ASCPECT_RATIO;
-use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3};
+use crate::rendering::{Point3, Ray, Vec3};
 
 pub struct CameraConfiguration {
     pub look_from: Point3,

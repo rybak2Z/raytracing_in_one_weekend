@@ -1,5 +1,7 @@
-use super::{Color, Point3, Ray, Vec3};
-use crate::material::{Lambertian, Material};
+use super::{
+    material::{Lambertian, Material},
+    Color, Point3, Ray, Vec3,
+};
 
 pub struct HitRecord {
     pub point: Point3,
