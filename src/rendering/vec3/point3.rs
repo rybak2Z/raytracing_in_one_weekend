@@ -1,6 +1,6 @@
-use std::ops;
+use super::Vec3;
 
-use crate::vec3::Vec3;
+use std::ops;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Point3 {

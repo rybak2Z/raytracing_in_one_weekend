@@ -1,8 +1,7 @@
-pub use std::io::{self, Error, ErrorKind};
-use std::io::{BufWriter, StderrLock, StdoutLock, Write};
-
 use crate::config::*;
-use crate::vec3::Color;
+use crate::rendering::Color;
+
+use std::io::{self, BufWriter, Error, ErrorKind, StderrLock, StdoutLock, Write};
 
 pub type Writer<'a> = BufWriter<StdoutLock<'a>>;
 pub type WriterErr<'a> = BufWriter<StderrLock<'a>>;
@@ -10,8 +9,8 @@ pub type WriterErr<'a> = BufWriter<StderrLock<'a>>;
 pub struct WritingSynchronizer<'a> {
     buffer: Vec<(Color, u32)>,
     next_to_write: i32,
-    writer: BufWriter<StdoutLock<'a>>,
-    writer_err: BufWriter<StderrLock<'a>>,
+    writer: Writer<'a>,
+    writer_err: WriterErr<'a>,
     pixels_written: u32,
     update_counter: u32,
     update_every: u32,

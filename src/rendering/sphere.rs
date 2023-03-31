@@ -1,7 +1,7 @@
-use crate::material::Material;
-use crate::ray::Ray;
-use crate::rendering::*;
-use crate::vec3::*;
+use super::{
+    hit_detection::{HitRecord, Hittable},
+    Material, Point3, Ray, Vec3,
+};
 
 #[derive(Clone)]
 pub struct Sphere {

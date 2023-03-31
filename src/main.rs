@@ -1,10 +1,9 @@
-use std::io::{Error, ErrorKind};
-
-use raytracing_in_one_weekend::camera::Camera;
 use raytracing_in_one_weekend::config;
-use raytracing_in_one_weekend::rendering::*;
+use raytracing_in_one_weekend::rendering::{camera::Camera, render};
 use raytracing_in_one_weekend::world_building::*;
-use raytracing_in_one_weekend::writing::*;
+use raytracing_in_one_weekend::writing::write_meta_data;
+
+use std::io::{self, Error, ErrorKind};
 
 fn main() -> io::Result<()> {
     if config::THREADS <= 0 {

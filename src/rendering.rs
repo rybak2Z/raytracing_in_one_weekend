@@ -1,20 +1,34 @@
+pub mod camera;
+pub mod hit_detection;
+pub mod material;
+pub mod sphere;
+pub mod vec3;
+
+mod coordinate_iterator;
+mod ray;
+
+pub use hit_detection::{HitRecord, Hittable, HittableList};
+pub use ray::Ray;
+pub use vec3::{
+    color::{self, Color},
+    Point3, Vec3,
+};
+
+use camera::Camera;
+use coordinate_iterator::CoordinateIterator;
+use material::Material;
+
+use crate::config::*;
+use crate::writing::WritingSynchronizer;
+
 use rand::prelude::*;
-pub use std::rc::Rc;
+
+use std::io;
 use std::sync::{
     mpsc::{self, Receiver, Sender},
     Arc, Mutex,
 };
 use std::thread::{self, JoinHandle};
-
-mod hit_detection;
-pub use hit_detection::*;
-
-use crate::camera::Camera;
-use crate::config::*;
-use crate::coordinate_iterator::CoordinateIterator;
-use crate::ray::*;
-use crate::vec3::*;
-use crate::writing::*;
 
 struct RenderingTools<'a> {
     world: &'a HittableList,

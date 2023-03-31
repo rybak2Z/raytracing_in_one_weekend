@@ -1,5 +1,4 @@
-use crate::camera::CameraConfiguration;
-use crate::vec3::{Point3, Vec3};
+use crate::rendering::{camera::CameraConfiguration, Point3, Vec3};
 use crate::world_building::WorldType;
 
 // Image

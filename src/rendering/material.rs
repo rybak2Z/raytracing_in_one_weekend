@@ -1,8 +1,9 @@
-use rand::prelude::*;
+use super::{
+    color::{self, Color},
+    HitRecord, Ray, Vec3,
+};
 
-use crate::ray::Ray;
-use crate::rendering::HitRecord;
-use crate::vec3::*;
+use rand::prelude::*;
 
 pub struct Scatter {
     pub ray: Ray,

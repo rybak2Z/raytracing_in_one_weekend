@@ -1,9 +1,11 @@
-use std::{fmt::Display, ops};
-
 mod premade;
+
 pub use premade::*;
 
-use crate::vec3::Vec3;
+use super::Vec3;
+
+use std::fmt::Display;
+use std::ops;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Color {

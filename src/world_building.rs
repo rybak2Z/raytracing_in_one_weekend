@@ -1,6 +1,8 @@
-use rand::prelude::*;
+use crate::rendering::{
+    camera::CameraConfiguration, hit_detection::HittableList, material::*, sphere::Sphere, vec3::*,
+};
 
-use crate::{camera::CameraConfiguration, material::*, rendering::*, sphere::Sphere, vec3::*};
+use rand::prelude::*;
 
 pub enum WorldType {
     Custom1,
