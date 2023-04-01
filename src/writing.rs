@@ -63,7 +63,8 @@ impl WritingSynchronizer<'_> {
         self.update_counter += 1;
         self.pixels_written += 1;
         if self.update_counter % self.update_every == 0 {
-            let relative_progress = self.pixels_written as f64 / *PIXELS_TOTAL.get().unwrap() as f64;
+            let relative_progress =
+                self.pixels_written as f64 / *PIXELS_TOTAL.get().unwrap() as f64;
             write_progress_update(relative_progress, &mut self.writer_err)?;
             self.update_counter = 0;
         }
