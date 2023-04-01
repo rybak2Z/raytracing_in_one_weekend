@@ -6,6 +6,10 @@ use std::io::{self, BufWriter, Error, ErrorKind, StderrLock, StdoutLock, Write};
 pub type Writer<'a> = BufWriter<StdoutLock<'a>>;
 pub type WriterErr<'a> = BufWriter<StderrLock<'a>>;
 
+// File format
+pub const FILE_TYPE: &str = "P3";
+pub const MAX_COLOR: u32 = 255;
+
 pub struct WritingSynchronizer<'a> {
     buffer: Vec<(Color, u32)>,
     next_to_write: i32,

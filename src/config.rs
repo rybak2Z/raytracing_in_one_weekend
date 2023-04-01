@@ -121,7 +121,3 @@ pub fn generate_config() -> io::Result<()> {
 
     Ok(())
 }
-
-// File format
-pub const FILE_TYPE: &str = "P3";
-pub const MAX_COLOR: u32 = 255;
