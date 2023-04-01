@@ -1,10 +1,23 @@
+use crate::config::err_invalid_data;
+use crate::rendering::{HittableList, camera::*, Vec3, Point3, Color};
+
 use serde::Deserialize;
+
+use std::io;
+
+const SCENE_PATH: &str = "default_scene.json";
 
 #[derive(Deserialize)]
 struct Scene {
     camera: JsonCamera,
     materials: Vec<JsonMaterial>,
     objects: Vec<JsonSphere>,
+}
+
+impl Scene {
+    fn validate(&self) -> io::Result<()> {
+        todo!()
+    }
 }
 
 #[derive(Deserialize)]
@@ -52,4 +65,31 @@ struct JsonSphere {
     coordinates: (f64, f64, f64),
     radius: f64,
     material: JsonMaterial,
+}
+
+pub fn generate_scene() -> io::Result<(HittableList, Camera)> {
+    let scene = read_scene_file()?;
+    scene.validate()?;
+    let camera = create_camera(scene.camera)?;
+    let world = create_world(scene.objects)?;
+
+    Ok((world, camera))
+}
+
+fn read_scene_file() -> io::Result<Scene> {
+    let file_contents = std::fs::read_to_string(SCENE_PATH)?;
+    let scene = serde_json::from_str::<Scene>(&file_contents);
+    if scene.is_err() {
+        return Err(err_invalid_data(&format!("Failed to deserialize {}", SCENE_PATH)));
+    }
+
+    Ok(scene.unwrap())
+}
+
+fn create_camera(json_camera: JsonCamera) -> io::Result<Camera> {
+    todo!()
+}
+
+fn create_world(json_objects: Vec<JsonSphere>) -> io::Result<HittableList> {
+    todo!()
 }

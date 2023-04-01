@@ -39,7 +39,7 @@ struct TomlRenderingConfiguration {
     writing_buffer_capacity: usize,
 }
 
-fn err_invalid_data(message: &str) -> io::Error {
+pub fn err_invalid_data(message: &str) -> io::Error {
     io::Error::new(InvalidData, message)
 }
 
