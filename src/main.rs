@@ -11,10 +11,10 @@ fn main() -> io::Result<()> {
         print!("Error: {e}");
     }
 
-    if *THREADS.get().unwrap() <= 0 {
+    if *THREADS.get().unwrap() == 0 {
         return Err(Error::new(
             ErrorKind::Other,
-            format!("Invalid number of threads (needs to be greater or equal to 1)."),
+            "Invalid number of threads (needs to be greater or equal to 1).",
         ));
     }
 
