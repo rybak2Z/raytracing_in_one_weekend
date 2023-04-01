@@ -24,18 +24,18 @@
     "materials": [
         {
             "name": "ground",
-            "type": "diffuse",
+            "type_": "diffuse",
             "color": {
                 "rgb": [100, 200, 200],
                 "normalized": false
             }
         }, {
             "name": "glass",
-            "type": "dialectric",
+            "type_": "dialectric",
             "refractive_index": 1.5
         }, {
             "name": "sphere_front_right",
-            "type": "diffuse",
+            "type_": "diffuse",
             "color": {
                 "rgb": [0.2, 0.2, 0.8],
                 "normalized": true
@@ -57,7 +57,7 @@
             "coordinates": [-2, 1.2, -2],
             "radius": 1.2,
             "material": {
-                "type": "diffuse",
+                "type_": "diffuse",
                 "color": {
                     "rgb": [0.8, 0.2, 0.2],
                     "normalized": true
@@ -67,7 +67,7 @@
             "coordinates": [2, 1.5, -2],
             "radius": 1.5,
             "material": {
-                "type": "metal",
+                "type_": "metal",
                 "color": {
                     "rgb": [0.8, 0.6, 0.2],
                     "normalized": true
