@@ -16,7 +16,14 @@ struct Scene {
 
 impl Scene {
     fn validate(&self) -> io::Result<()> {
-        todo!()
+        self.camera.validate()?;
+        for material in self.materials.iter() {
+            material.validate()?;
+        }
+        for object in self.objects.iter() {
+            object.validate()?;
+        }
+        Ok(())
     }
 }
 
@@ -38,10 +45,22 @@ struct JsonCamera {
     focal_length: f64,
 }
 
+impl JsonCamera {
+    fn validate(&self) -> io::Result<()> {
+        todo!()
+    }
+}
+
 #[derive(Deserialize)]
 enum JsonMaterial {
     ReferenceToName(String),
     Literal(JsonMaterialLiteral),
+}
+
+impl JsonMaterial {
+    fn validate(&self) -> io::Result<()> {
+        todo!()
+    }
 }
 
 #[derive(Deserialize)]
@@ -53,10 +72,22 @@ struct JsonMaterialLiteral {
     fuzziness: Option<f64>
 }
 
+impl JsonMaterialLiteral {
+    fn validate(&self) -> io::Result<()> {
+        todo!()
+    }
+}
+
 #[derive(Deserialize)]
 struct JsonColor {
     rgb: (f64, f64, f64),
     normalized: bool,
+}
+
+impl JsonColor {
+    fn validate(&self) -> io::Result<()> {
+        todo!()
+    }
 }
 
 #[derive(Deserialize)]
@@ -65,6 +96,12 @@ struct JsonSphere {
     coordinates: (f64, f64, f64),
     radius: f64,
     material: JsonMaterial,
+}
+
+impl JsonSphere {
+    fn validate(&self) -> io::Result<()> {
+        todo!()
+    }
 }
 
 pub fn generate_scene() -> io::Result<(HittableList, Camera)> {
