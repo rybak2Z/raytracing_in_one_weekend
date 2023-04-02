@@ -89,6 +89,20 @@
                 },
                 "fuzziness": 0.9
             }
+        }, {
+            "name": "moving_ball",
+            "coordinates": [5, 0.7, 0],
+            "radius": 0.7,
+            "movement": {
+                "target": [6, 0.7, 3]
+            },
+            "material": {
+                "type": "diffuse",
+                "color": {
+                    "rgb": [0.2, 0.8, 0.2],
+                    "normalized": true
+                }
+            }
         }
     ]
 }

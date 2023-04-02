@@ -31,6 +31,14 @@ struct JsonCamera {
     aperture: f64,
     focus_distance: Option<f64>,
     focal_length: f64,
+    #[serde(default)]
+    start_time: f64,
+    #[serde(default = "end_time_default")]
+    end_time: f64,
+}
+
+fn end_time_default() -> f64 {
+    1.0
 }
 
 #[derive(Deserialize)]
@@ -74,8 +82,18 @@ struct JsonColor {
 struct JsonSphere {
     _name: Option<String>,
     coordinates: (f64, f64, f64),
+    movement: Option<JsonMovement>,
     radius: f64,
     material: JsonMaterial,
+}
+
+#[derive(Deserialize)]
+struct JsonMovement {
+    target: (f64, f64, f64),
+    #[serde(default)]
+    start_time: f64,
+    #[serde(default = "end_time_default")]
+    end_time: f64,
 }
 
 pub fn generate_scene() -> io::Result<(HittableList, Camera)> {
@@ -101,6 +119,8 @@ fn create_camera(json_camera: JsonCamera) -> Camera {
     let look_at = Point3::new(coords.x, coords.y, coords.z);
     let vec = json_camera.view_up_direction;
     let view_up = Vec3::new(vec.x, vec.y, vec.z);
+    let start_time = json_camera.start_time;
+    let end_time = json_camera.end_time;
 
     let camera_config = CameraConfiguration {
         look_from,
@@ -110,6 +130,8 @@ fn create_camera(json_camera: JsonCamera) -> Camera {
         aperture: json_camera.aperture,
         focus_distance: json_camera.focus_distance,
         focal_length: json_camera.focal_length,
+        start_time: Some(start_time),
+        end_time: Some(end_time),
     };
 
     Camera::new(camera_config)
@@ -118,7 +140,7 @@ fn create_camera(json_camera: JsonCamera) -> Camera {
 fn create_world(json_objects: Vec<JsonSphere>) -> HittableList {
     let mut world = HittableList::default();
     for json_sphere in json_objects {
-        world.add(Box::new(json_sphere.to_sphere()));
+        world.add(json_sphere.to_sphere());
     }
     world
 }
