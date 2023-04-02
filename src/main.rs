@@ -6,10 +6,7 @@ use raytracing_in_one_weekend::writing::write_meta_data;
 use std::io::{self, Error, ErrorKind};
 
 fn main() -> io::Result<()> {
-    let result = generate_config();
-    if let Err(e) = result {
-        print!("Error: {e}");
-    }
+    generate_config()?;
 
     if *THREADS.get().unwrap() == 0 {
         return Err(Error::new(
