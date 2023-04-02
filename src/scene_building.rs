@@ -1,5 +1,9 @@
 use crate::rendering::{
-    camera::{CameraConfiguration, Camera}, hit_detection::HittableList, material::*, sphere::Sphere, vec3::*,
+    camera::{Camera, CameraConfiguration},
+    hit_detection::HittableList,
+    material::*,
+    sphere::Sphere,
+    vec3::*,
 };
 
 use rand::prelude::*;

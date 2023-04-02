@@ -1,6 +1,6 @@
 use raytracing_in_one_weekend::config::*;
-use raytracing_in_one_weekend::rendering::render;
 use raytracing_in_one_weekend::read_scene::read_scene;
+use raytracing_in_one_weekend::rendering::render;
 use raytracing_in_one_weekend::scene_building::build_scene;
 use raytracing_in_one_weekend::writing::write_meta_data;
 
@@ -23,7 +23,7 @@ fn main() -> io::Result<()> {
 
     let (world, camera) = match USE_BUILD_FUNCTION.get().unwrap() {
         true => build_scene(),
-        false => read_scene()?
+        false => read_scene()?,
     };
 
     render(world, camera)?;

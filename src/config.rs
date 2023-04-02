@@ -85,7 +85,11 @@ fn determine_image_settings(image_config: TomlImageConfiguration) -> io::Result<
 }
 
 pub fn generate_config() -> io::Result<()> {
-    let TomlConfiguration { image, rendering, other } = read_config_file()?;
+    let TomlConfiguration {
+        image,
+        rendering,
+        other,
+    } = read_config_file()?;
     let (aspect_ratio, width, height) = determine_image_settings(image)?;
     let pixels_total = width * height;
 
