@@ -34,6 +34,8 @@ pub fn build_custom_1() -> (HittableList, CameraConfiguration) {
         aperture: 0.0,
         focus_distance: None,
         focal_length: 1.0,
+        start_time: None,
+        end_time: None,
     };
 
     (world, cam_config)
@@ -116,6 +118,8 @@ pub fn build_random_1() -> (HittableList, CameraConfiguration) {
         aperture: 0.1,
         focus_distance: Some(10.0),
         focal_length: 1.0,
+        start_time: None,
+        end_time: None,
     };
 
     (world, cam_config)
