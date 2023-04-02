@@ -8,17 +8,17 @@ pub struct CoordinateIterator {
 impl CoordinateIterator {
     pub fn new() -> CoordinateIterator {
         CoordinateIterator {
-            row: IMAGE_HEIGHT - 1,
+            row: IMAGE_HEIGHT.get().unwrap() - 1,
             col: -1,
         }
     }
 
     pub fn next(&mut self) -> Option<(u32, u32)> {
-        if self.col as u32 == IMAGE_WIDTH - 1 && self.row == 0 {
+        if self.col as u32 == IMAGE_WIDTH.get().unwrap() - 1 && self.row == 0 {
             return None;
         }
 
-        if self.col as u32 == IMAGE_WIDTH - 1 {
+        if self.col as u32 == IMAGE_WIDTH.get().unwrap() - 1 {
             self.col = 0;
             self.row -= 1;
         } else {
