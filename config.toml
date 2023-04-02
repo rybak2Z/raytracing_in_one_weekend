@@ -5,7 +5,7 @@ width = 100
 
 [rendering]
 samples_per_pixel = 500
-max_child_ray_depth = 50
+max_child_ray_depth = 10
 threads = 1 
 main_thread_for_render = false
 update_frequency = 10
