@@ -42,7 +42,7 @@ impl Hittable for Sphere {
     }
 }
 
-fn find_smallest_valid_solution(
+pub fn find_smallest_valid_solution(
     a: f64,
     half_b: f64,
     discriminant: f64,
