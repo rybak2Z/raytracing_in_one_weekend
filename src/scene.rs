@@ -43,6 +43,7 @@ enum JsonMaterial {
 #[derive(Deserialize)]
 struct JsonMaterialLiteral {
     name: Option<String>,
+    #[serde(rename = "type")]  // "type" is a reserved keyword is rust
     type_: String,
     color: Option<JsonColor>,
     refractive_index: Option<f64>,
