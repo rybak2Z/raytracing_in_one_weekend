@@ -10,3 +10,6 @@ threads = 1
 main_thread_for_render = false
 update_frequency = 10
 writing_buffer_capacity = 32
+
+[other]
+use_build_function = true 
