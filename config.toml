@@ -1,21 +1,12 @@
 [image]
-# Out of aspect_ratio, width, and height, you can only set two to what you want.
-# The third one must be commented out by placing a # at the start of the line.
-aspect_ratio = [16, 9]  # [X, Y] means a ratio of X:Y, e.g. 16:9
+aspect_ratio = [16, 9] 
 width = 100 
 #height = 50
 
 [rendering]
 samples_per_pixel = 500
 max_child_ray_depth = 50
-threads = 1  # Total number of threads (not additional, i. e. must be >=1)
-# If threads is set to a number greater than 1, setting this to true will make 
-# the main thread do the normal rendering work the other threads do too. 
-# However, this will make the printed progress indicator lag behind.
+threads = 1 
 main_thread_for_render = false
-# After how many computed pixels the printed progress indicator should be updated.
 update_frequency = 10
-# With more than one thread participating in rendering, new pixels' data will be
-# stored until a continuous line of pixels is complete. This setting determines
-# how many pixels' data can be stored until the storage needs to increased.
 writing_buffer_capacity = 32
