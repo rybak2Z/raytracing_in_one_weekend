@@ -60,7 +60,7 @@ impl Camera {
         let point_on_focus_plane = self.lower_left_corner + s * self.horizontal + t * self.vertical;
         let direction = point_on_focus_plane - start;
 
-        Ray::new(start, direction)
+        Ray::new(start, direction, None)
     }
 }
 
