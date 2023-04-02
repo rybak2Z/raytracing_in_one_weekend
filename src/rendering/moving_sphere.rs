@@ -3,7 +3,7 @@ use super::{
 };
 
 #[derive(Clone)]
-struct MovingSphere {
+pub struct MovingSphere {
     center0: Point3,
     center1: Point3,
     time0: f64,
