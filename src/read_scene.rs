@@ -96,7 +96,7 @@ struct JsonMovement {
     end_time: f64,
 }
 
-pub fn generate_scene() -> io::Result<(HittableList, Camera)> {
+pub fn read_scene() -> io::Result<(HittableList, Camera)> {
     let scene = read_scene_file()?;
     scene.validate()?;
     let camera = create_camera(scene.camera);
