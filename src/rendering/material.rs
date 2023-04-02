@@ -43,7 +43,7 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> Option<Scatter> {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<Scatter> {
         let mut scatter_direction = hit_record.normal + Vec3::random_unit_vector();
 
         // Catch degenerate scatter direction
@@ -51,7 +51,7 @@ impl Material for Lambertian {
             scatter_direction = hit_record.normal;
         }
 
-        let scattered_ray = Ray::new(hit_record.point, scatter_direction);
+        let scattered_ray = Ray::new(hit_record.point, scatter_direction, Some(ray_in.time()));
 
         Some(Scatter {
             ray: scattered_ray,
@@ -72,7 +72,7 @@ impl UniformScatter {
 }
 
 impl Material for UniformScatter {
-    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> Option<Scatter> {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<Scatter> {
         let mut scatter_direction = Vec3::random_in_hemisphere(hit_record.normal);
 
         // Catch degenerate scatter direction
@@ -80,7 +80,7 @@ impl Material for UniformScatter {
             scatter_direction = hit_record.normal;
         }
 
-        let scattered_ray = Ray::new(hit_record.point, scatter_direction);
+        let scattered_ray = Ray::new(hit_record.point, scatter_direction, Some(ray_in.time()));
 
         Some(Scatter {
             ray: scattered_ray,
@@ -108,6 +108,7 @@ impl Material for Metal {
         let scattered_ray = Ray::new(
             hit_record.point,
             reflected_direction + self.fuzziness * Vec3::random_in_unit_sphere(),
+            None,
         );
         let does_hit = Vec3::dot(scattered_ray.direction(), hit_record.normal) > 0.0;
         if !does_hit {
@@ -159,7 +160,7 @@ impl Material for Dialectric {
                 Vec3::refract(unit_direction, hit_record.normal, refraction_ratio)
             };
 
-        let scattered_ray = Ray::new(hit_record.point, direction);
+        let scattered_ray = Ray::new(hit_record.point, direction, Some(ray_in.time()));
         let attenuation = color::WHITE;
 
         Some(Scatter {

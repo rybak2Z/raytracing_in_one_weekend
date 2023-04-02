@@ -4,7 +4,9 @@ use super::{
 };
 
 use crate::config::err_invalid_data;
-use crate::rendering::{material::*, sphere::Sphere, Color, Point3};
+use crate::rendering::{
+    material::*, moving_sphere::MovingSphere, sphere::Sphere, Color, Hittable, Point3,
+};
 
 use once_cell::sync::Lazy;
 
@@ -42,6 +44,9 @@ impl JsonCamera {
         }
         if self.focal_length < 0.0 {
             return Err(err_invalid_data("Focal length cannot be negative."));
+        }
+        if self.start_time > self.end_time {
+            return Err(err_invalid_data("End time cannot be before start time"));
         }
 
         Ok(())
@@ -180,13 +185,30 @@ impl JsonSphere {
         if self.radius < 0.0 {
             eprintln!("Warning: Sphere with negative radius created. This inverts the normals.");
         }
+        if let Some(mov) = &self.movement {
+            if mov.start_time > mov.end_time {
+                return Err(err_invalid_data("End time cannot be before start time."));
+            }
+        }
         self.material.validate()?;
         Ok(())
     }
 
-    pub fn to_sphere(&self) -> Sphere {
+    pub fn to_sphere(&self) -> Box<dyn Hittable> {
         let (x, y, z) = (self.coordinates.0, self.coordinates.1, self.coordinates.2);
         let point = Point3::new(x, y, z);
-        Sphere::new(point, self.radius, self.material.to_material())
+        if let Some(mov) = &self.movement {
+            let target_point = Point3::new(mov.target.0, mov.target.1, mov.target.2);
+            Box::new(MovingSphere::new(
+                point,
+                target_point,
+                mov.start_time,
+                mov.end_time,
+                self.radius,
+                self.material.to_material(),
+            ))
+        } else {
+            Box::new(Sphere::new(point, self.radius, self.material.to_material()))
+        }
     }
 }

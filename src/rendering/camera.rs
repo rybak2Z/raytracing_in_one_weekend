@@ -1,6 +1,8 @@
 use crate::config::ASPECT_RATIO;
 use crate::rendering::{Point3, Ray, Vec3};
 
+use rand::prelude::*;
+
 pub struct CameraConfiguration {
     pub look_from: Point3,
     pub look_at: Point3,
@@ -9,6 +11,8 @@ pub struct CameraConfiguration {
     pub aperture: f64,
     pub focus_distance: Option<f64>, // if None, the distance between look_from and look_at will be used
     pub focal_length: f64,
+    pub start_time: Option<f64>,
+    pub end_time: Option<f64>,
 }
 
 #[derive(Clone)]
@@ -21,6 +25,8 @@ pub struct Camera {
     v: Vec3,
     _w: Vec3,
     lens_radius: f64,
+    time0: f64, // shutter open time
+    time1: f64, // shutter close time
 }
 
 impl Camera {
@@ -49,6 +55,8 @@ impl Camera {
             v,
             _w: w,
             lens_radius,
+            time0: config.start_time.unwrap_or(0.0),
+            time1: config.end_time.unwrap_or(1.0),
         }
     }
 
@@ -60,7 +68,12 @@ impl Camera {
         let point_on_focus_plane = self.lower_left_corner + s * self.horizontal + t * self.vertical;
         let direction = point_on_focus_plane - start;
 
-        Ray::new(start, direction)
+        let mut rng = thread_rng();
+        Ray::new(
+            start,
+            direction,
+            Some(rng.gen_range(self.time0..self.time1)),
+        )
     }
 }
 
