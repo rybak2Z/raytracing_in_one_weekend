@@ -52,6 +52,8 @@ The file must have the following structure. See `default_scene.json` and the [JS
     - `aperture` (number) How much light reaches the camera. See [wikipedia article](https://en.wikipedia.org/wiki/Aperture) for more information.
     - `focus_distance` (number or null) The distance from the camera to the plane where everything is in focus. If set to null, then everything is in focus.
     - `focal_length` (number) See [wikipedia article](https://en.wikipedia.org/wiki/Focal_length) for more information.
+    - `start_time` (number) [optional] Defines the point in time when the camera shutter opens. Is used together with moving objects to create a motion blur effect. (defaults to 0.0)
+    - `end_time` (number) [optional] Defines the point in time when the camera shutter closes. (defaults to 1.0)
 
 - `materials` (array) [optional] This array can contain any amount of material definitions that can be referred to by name when defining objects.
     - unnamed (object)
@@ -69,5 +71,9 @@ The file must have the following structure. See `default_scene.json` and the [JS
         - `name` (string) [optional] Does not have any effect. Just for documentation.
         - `coordinates` (array) An array of three numbers for the x, y, and z coordinates
         - `radius` (number) Radius of the sphere
+        - `movement` (object) Creates motion blur
+            - `target` (array) An array with three numbers for the x, y, and z coordinates describing where the object travels to.
+            - `start_time` (number) [optional] The time at which the object is at `coordinates` (defaults to 0.0)
+            - `end_time` (number) [optional] The time at which the object is at `target` (defaults to 1.0)
         - `material` (string or object) Can be either a string containing the name of a previously defined material or an object containing a new material definition in the same format as above (though doesn't require a name)
     - ...
