@@ -51,7 +51,7 @@ pub fn render(world: HittableList, camera: Camera) -> io::Result<()> {
     let (tx, rx) = mpsc::channel::<(Color, (u32, u32))>();
 
     let mut handles: Vec<JoinHandle<()>> = vec![];
-    for _ in 0..(THREADS - 1) {
+    for _ in 0..(THREADS.get().unwrap() - 1) {
         let world_copy = world.clone();
         let camera_copy = camera.clone();
         let tx_copy = tx.clone();
@@ -100,7 +100,7 @@ fn main_thread_work(
             writing_sync.write(color, row, col)?;
         }
 
-        if !USE_MAIN_THREAD_FOR_RENDERING && THREADS > 1 {
+        if !USE_MAIN_THREAD_FOR_RENDERING.get().unwrap() && *THREADS.get().unwrap() > 1 {
             continue;
         }
 
@@ -145,14 +145,14 @@ fn finish(
 
 fn calculate_pixel_color(row: u32, col: u32, render_tools: &mut RenderingTools) -> Color {
     let accumulated_color = accumulate_pixel_color_samples(row, col, render_tools);
-    let mut pixel_color = accumulated_color / SAMPLES_PER_PIXEL as f64;
+    let mut pixel_color = accumulated_color / *SAMPLES_PER_PIXEL.get().unwrap() as f64;
     correct_gamma(&mut pixel_color);
     pixel_color
 }
 
 fn accumulate_pixel_color_samples(row: u32, col: u32, render_tools: &mut RenderingTools) -> Color {
     let mut accumulated_color = Color::default();
-    for _sample in 0..SAMPLES_PER_PIXEL {
+    for _sample in 0..*SAMPLES_PER_PIXEL.get().unwrap() {
         accumulated_color += calculate_sample(row, col, render_tools);
     }
 
@@ -162,12 +162,16 @@ fn accumulate_pixel_color_samples(row: u32, col: u32, render_tools: &mut Renderi
 fn calculate_sample(row: u32, col: u32, render_tools: &mut RenderingTools) -> Color {
     let (u, v) = get_uv(row, col, &mut render_tools.rng);
     let ray = render_tools.camera.get_ray(u, v);
-    get_ray_color(&ray, render_tools.world, MAX_DEPTH)
+    get_ray_color(
+        &ray,
+        render_tools.world,
+        *MAX_CHILD_RAYS.get().unwrap() as i32,
+    )
 }
 
 fn get_uv(row: u32, col: u32, rng: &mut ThreadRng) -> (f64, f64) {
-    let u = (col as f64 + rng.gen::<f64>()) / (IMAGE_WIDTH - 1) as f64;
-    let v = (row as f64 + rng.gen::<f64>()) / (IMAGE_HEIGHT - 1) as f64;
+    let u = (col as f64 + rng.gen::<f64>()) / (IMAGE_WIDTH.get().unwrap() - 1) as f64;
+    let v = (row as f64 + rng.gen::<f64>()) / (IMAGE_HEIGHT.get().unwrap() - 1) as f64;
     (u, v)
 }
 

@@ -1,0 +1,12 @@
+[image]
+aspect_ratio = [16, 9] 
+width = 100 
+#height = 50
+
+[rendering]
+samples_per_pixel = 500
+max_child_ray_depth = 10
+threads = 1 
+main_thread_for_render = false
+update_frequency = 10
+writing_buffer_capacity = 32

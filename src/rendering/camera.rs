@@ -1,4 +1,4 @@
-use crate::config::ASCPECT_RATIO;
+use crate::config::ASPECT_RATIO;
 use crate::rendering::{Point3, Ray, Vec3};
 
 pub struct CameraConfiguration {
@@ -68,7 +68,7 @@ fn calculate_viewport_dimensions(vertical_fov: f64) -> (f64, f64) {
     let vertical_radians = vertical_fov.to_radians();
     let half_vertical_distance_on_viewing_plane = f64::tan(vertical_radians / 2.0);
     let viewport_height = 2.0 * half_vertical_distance_on_viewing_plane;
-    let viewport_width = ASCPECT_RATIO * viewport_height;
+    let viewport_width = ASPECT_RATIO.get().unwrap() * viewport_height;
 
     (viewport_width, viewport_height)
 }

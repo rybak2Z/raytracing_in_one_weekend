@@ -6,6 +6,10 @@ use std::io::{self, BufWriter, Error, ErrorKind, StderrLock, StdoutLock, Write};
 pub type Writer<'a> = BufWriter<StdoutLock<'a>>;
 pub type WriterErr<'a> = BufWriter<StderrLock<'a>>;
 
+// File format
+pub const FILE_TYPE: &str = "P3";
+pub const MAX_COLOR: u32 = 255;
+
 pub struct WritingSynchronizer<'a> {
     buffer: Vec<(Color, u32)>,
     next_to_write: i32,
@@ -19,13 +23,13 @@ pub struct WritingSynchronizer<'a> {
 impl WritingSynchronizer<'_> {
     pub fn new() -> WritingSynchronizer<'static> {
         WritingSynchronizer {
-            buffer: Vec::with_capacity(WRITING_BUFFER_START_CAPACITY),
-            next_to_write: (TOTAL_NUM_PIXELS - 1) as i32,
+            buffer: Vec::with_capacity(*WRITING_BUFFER_START_CAPACITY.get().unwrap()),
+            next_to_write: (PIXELS_TOTAL.get().unwrap() - 1) as i32,
             writer: BufWriter::new(io::stdout().lock()),
             writer_err: BufWriter::new(io::stderr().lock()),
             pixels_written: 0,
             update_counter: 0,
-            update_every: UPDATE_PROGRESS_EVERY_N_PIXELS,
+            update_every: *UPDATE_EVERY_N_PIXELS.get().unwrap(),
         }
     }
 
@@ -46,11 +50,11 @@ impl WritingSynchronizer<'_> {
     }
 
     fn add_to_buffer(&mut self, pixel_color: Color, row_from_bottom: u32, col: u32) {
-        let row = (IMAGE_HEIGHT - 1) - row_from_bottom;
-        let pixel_index = row * IMAGE_WIDTH + col;
+        let row = (IMAGE_HEIGHT.get().unwrap() - 1) - row_from_bottom;
+        let pixel_index = row * IMAGE_WIDTH.get().unwrap() + col;
 
         // So that the first pixels that should be written are at the end of the vector when sorted (for pop())
-        let reversed_index = TOTAL_NUM_PIXELS - 1 - pixel_index;
+        let reversed_index = PIXELS_TOTAL.get().unwrap() - 1 - pixel_index;
 
         self.buffer.push((pixel_color, reversed_index));
     }
@@ -59,7 +63,8 @@ impl WritingSynchronizer<'_> {
         self.update_counter += 1;
         self.pixels_written += 1;
         if self.update_counter % self.update_every == 0 {
-            let relative_progress = self.pixels_written as f64 / TOTAL_NUM_PIXELS as f64;
+            let relative_progress =
+                self.pixels_written as f64 / *PIXELS_TOTAL.get().unwrap() as f64;
             write_progress_update(relative_progress, &mut self.writer_err)?;
             self.update_counter = 0;
         }
@@ -101,7 +106,11 @@ impl WritingSynchronizer<'_> {
 pub fn write_meta_data() -> io::Result<()> {
     write!(
         std::io::stdout(),
-        "{FILE_TYPE}\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n{MAX_COLOR}\n"
+        "{}\n{} {}\n{}\n",
+        FILE_TYPE,
+        IMAGE_WIDTH.get().unwrap(),
+        IMAGE_HEIGHT.get().unwrap(),
+        MAX_COLOR,
     )
 }
 
