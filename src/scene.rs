@@ -43,11 +43,25 @@ enum JsonMaterial {
 #[derive(Deserialize)]
 struct JsonMaterialLiteral {
     name: Option<String>,
-    #[serde(rename = "type")]  // "type" is a reserved keyword is rust
-    type_: String,
+    #[serde(rename = "type")] // "type" is a reserved keyword is rust
+    type_: JsonMaterialOptions,
     color: Option<JsonColor>,
     refractive_index: Option<f64>,
     fuzziness: Option<f64>,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum JsonMaterialOptions {
+    Diffuse,
+    Metal,
+    Dialectric,
+}
+
+impl std::fmt::Display for JsonMaterialOptions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 #[derive(Deserialize)]

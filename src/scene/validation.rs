@@ -1,4 +1,7 @@
-use super::{JsonCamera, JsonColor, JsonMaterial, JsonMaterialLiteral, JsonSphere, Scene};
+use super::{
+    JsonCamera, JsonColor, JsonMaterial, JsonMaterialLiteral, JsonMaterialOptions, JsonSphere,
+    Scene,
+};
 
 use crate::config::err_invalid_data;
 use crate::rendering::{material::*, sphere::Sphere, Color, Point3};
@@ -72,15 +75,15 @@ impl JsonMaterial {
 
 impl JsonMaterialLiteral {
     pub fn validate(&self) -> io::Result<()> {
-        match self.type_.as_str() {
-            "diffuse" => {
+        match self.type_ {
+            JsonMaterialOptions::Diffuse => {
                 if let Some(c) = &self.color {
                     c.validate()?;
                 } else {
                     return Err(err_invalid_data("Diffuse material needs a color."));
                 }
             }
-            "metal" => {
+            JsonMaterialOptions::Metal => {
                 if let Some(fuzz) = self.fuzziness {
                     if fuzz < 0.0 {
                         return Err(err_invalid_data("Metal fuzziness cannot be negative"));
@@ -96,7 +99,7 @@ impl JsonMaterialLiteral {
                     return Err(err_invalid_data("Metal material needs a color."));
                 }
             }
-            "dialectric" => {
+            JsonMaterialOptions::Dialectric => {
                 if let Some(rf) = self.refractive_index {
                     if rf < 0.0 {
                         return Err(err_invalid_data("Refractive index cannot be negative."));
@@ -106,12 +109,6 @@ impl JsonMaterialLiteral {
                         "Dialectric material needs the property \"refractive_index\"",
                     ));
                 }
-            }
-            invalid_material => {
-                return Err(err_invalid_data(&format!(
-                    "Material type \"{}\" does not exist.",
-                    invalid_material
-                )));
             }
         }
 
@@ -129,11 +126,17 @@ impl JsonMaterialLiteral {
     }
 
     pub fn to_material(&self) -> Box<dyn Material> {
-        match self.type_.as_str() {
-            "diffuse" => Box::new(Lambertian::new(self.color.as_ref().unwrap().to_color())),
-            "metal" => Box::new(Metal::new(self.color.as_ref().unwrap().to_color(), self.fuzziness.unwrap())),
-            "dialectric" => Box::new(Dialectric::new(self.refractive_index.unwrap())),
-            _ => panic!("Error: Could not create material due to invalid data, though the data must have been validated."),
+        match self.type_ {
+            JsonMaterialOptions::Diffuse => {
+                Box::new(Lambertian::new(self.color.as_ref().unwrap().to_color()))
+            }
+            JsonMaterialOptions::Metal => Box::new(Metal::new(
+                self.color.as_ref().unwrap().to_color(),
+                self.fuzziness.unwrap(),
+            )),
+            JsonMaterialOptions::Dialectric => {
+                Box::new(Dialectric::new(self.refractive_index.unwrap()))
+            }
         }
     }
 }
