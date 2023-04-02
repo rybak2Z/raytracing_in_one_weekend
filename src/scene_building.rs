@@ -1,47 +1,14 @@
 use crate::rendering::{
-    camera::CameraConfiguration, hit_detection::HittableList, material::*, sphere::Sphere, vec3::*,
+    camera::{Camera, CameraConfiguration},
+    hit_detection::HittableList,
+    material::*,
+    sphere::Sphere,
+    vec3::*,
 };
 
 use rand::prelude::*;
 
-pub enum WorldType {
-    Custom1,
-    Random1,
-}
-
-pub fn build_custom_1() -> (HittableList, CameraConfiguration) {
-    let material_ground = Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Box::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left = Box::new(Dialectric::new(1.5));
-    let material_right = Box::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
-
-    let sphere_ground = Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, material_ground);
-    let sphere_center = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, material_center);
-    let sphere_left = Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, material_left);
-    let sphere_right = Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, material_right);
-
-    let mut world = HittableList::new();
-    world.add(Box::new(sphere_ground));
-    world.add(Box::new(sphere_center));
-    world.add(Box::new(sphere_left));
-    world.add(Box::new(sphere_right));
-
-    let cam_config = CameraConfiguration {
-        look_from: Point3::new(0.0, 0.0, 0.0),
-        look_at: Point3::new(0.0, 0.0, -1.0),
-        view_up: Vec3::new(0.0, 1.0, 0.0),
-        vertical_fov: 90.0,
-        aperture: 0.0,
-        focus_distance: None,
-        focal_length: 1.0,
-        start_time: None,
-        end_time: None,
-    };
-
-    (world, cam_config)
-}
-
-pub fn build_random_1() -> (HittableList, CameraConfiguration) {
+pub fn build_scene() -> (HittableList, Camera) {
     let mut world = HittableList::new();
 
     let ground_material = Box::new(Lambertian::new(Color::new(0.62, 0.76, 0.76)));
@@ -54,7 +21,7 @@ pub fn build_random_1() -> (HittableList, CameraConfiguration) {
             let choose_material: f64 = rng.gen();
             let center = Point3::new(
                 a as f64 + 0.9 * rng.gen::<f64>(),
-                0.2,
+                0.0,
                 b as f64 + 0.9 * rng.gen::<f64>(),
             );
 
@@ -76,6 +43,7 @@ pub fn build_random_1() -> (HittableList, CameraConfiguration) {
                 }
 
                 let radius = rng.gen_range(0.15..0.25);
+                let center = center + Vec3::new(0.0, radius, 0.0);
                 world.add(Box::new(Sphere::new(
                     center,
                     radius,
@@ -122,5 +90,5 @@ pub fn build_random_1() -> (HittableList, CameraConfiguration) {
         end_time: None,
     };
 
-    (world, cam_config)
+    (world, Camera::new(cam_config))
 }

@@ -1,5 +1,5 @@
 pub mod config;
+pub mod read_scene;
 pub mod rendering;
-pub mod scene;
-pub mod world_building;
+pub mod scene_building;
 pub mod writing;

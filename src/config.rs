@@ -15,11 +15,13 @@ pub static THREADS: OnceCell<u32> = OnceCell::new();
 pub static USE_MAIN_THREAD_FOR_RENDERING: OnceCell<bool> = OnceCell::new();
 pub static UPDATE_EVERY_N_PIXELS: OnceCell<u32> = OnceCell::new();
 pub static WRITING_BUFFER_START_CAPACITY: OnceCell<usize> = OnceCell::new();
+pub static USE_BUILD_FUNCTION: OnceCell<bool> = OnceCell::new();
 
 #[derive(Deserialize, Debug)]
 struct TomlConfiguration {
     image: TomlImageConfiguration,
     rendering: TomlRenderingConfiguration,
+    other: TomlOtherConfiguration,
 }
 
 #[derive(Deserialize, Debug)]
@@ -37,6 +39,11 @@ struct TomlRenderingConfiguration {
     main_thread_for_render: bool,
     update_frequency: u32,
     writing_buffer_capacity: usize,
+}
+
+#[derive(Deserialize, Debug)]
+struct TomlOtherConfiguration {
+    use_build_function: bool,
 }
 
 pub fn err_invalid_data(message: &str) -> io::Error {
@@ -78,7 +85,11 @@ fn determine_image_settings(image_config: TomlImageConfiguration) -> io::Result<
 }
 
 pub fn generate_config() -> io::Result<()> {
-    let TomlConfiguration { image, rendering } = read_config_file()?;
+    let TomlConfiguration {
+        image,
+        rendering,
+        other,
+    } = read_config_file()?;
     let (aspect_ratio, width, height) = determine_image_settings(image)?;
     let pixels_total = width * height;
 
@@ -98,6 +109,7 @@ pub fn generate_config() -> io::Result<()> {
     let main_thread_for_render = rendering.main_thread_for_render;
     let update_frequency = rendering.update_frequency;
     let writing_buffer_capacity = rendering.writing_buffer_capacity;
+    let use_build_function = other.use_build_function;
 
     let successes = [
         ASPECT_RATIO.set(aspect_ratio).is_ok(),
@@ -114,6 +126,7 @@ pub fn generate_config() -> io::Result<()> {
         WRITING_BUFFER_START_CAPACITY
             .set(writing_buffer_capacity)
             .is_ok(),
+        USE_BUILD_FUNCTION.set(use_build_function).is_ok(),
     ];
 
     if successes.iter().any(|success| !success) {
