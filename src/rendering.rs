@@ -162,7 +162,11 @@ fn accumulate_pixel_color_samples(row: u32, col: u32, render_tools: &mut Renderi
 fn calculate_sample(row: u32, col: u32, render_tools: &mut RenderingTools) -> Color {
     let (u, v) = get_uv(row, col, &mut render_tools.rng);
     let ray = render_tools.camera.get_ray(u, v);
-    get_ray_color(&ray, render_tools.world, *MAX_CHILD_RAYS.get().unwrap() as i32)
+    get_ray_color(
+        &ray,
+        render_tools.world,
+        *MAX_CHILD_RAYS.get().unwrap() as i32,
+    )
 }
 
 fn get_uv(row: u32, col: u32, rng: &mut ThreadRng) -> (f64, f64) {
