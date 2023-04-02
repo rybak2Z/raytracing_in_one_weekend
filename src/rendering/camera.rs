@@ -54,7 +54,7 @@ impl Camera {
             _w: w,
             lens_radius,
             time0: 0.0,
-            time1: 0.0,
+            time1: 1.0,
         }
     }
 
