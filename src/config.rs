@@ -39,7 +39,7 @@ struct TomlRenderingConfiguration {
     writing_buffer_capacity: usize,
 }
 
-fn err_invalid_data(message: &str) -> io::Error {
+pub fn err_invalid_data(message: &str) -> io::Error {
     io::Error::new(InvalidData, message)
 }
 
@@ -73,7 +73,7 @@ fn determine_image_settings(image_config: TomlImageConfiguration) -> io::Result<
             Ok((ratio, w, h))
         }
         (None, Some(w), Some(h)) => Ok((w as f64 / h as f64, w, h)),
-        (_, _, _) => return Err(err_invalid_data("Invalid image settings")),
+        (_, _, _) => Err(err_invalid_data("Invalid image settings")),
     }
 }
 
@@ -107,9 +107,13 @@ pub fn generate_config() -> io::Result<()> {
         SAMPLES_PER_PIXEL.set(samples_per_pixel).is_ok(),
         MAX_CHILD_RAYS.set(max_child_ray_depth).is_ok(),
         THREADS.set(threads).is_ok(),
-        USE_MAIN_THREAD_FOR_RENDERING.set(main_thread_for_render).is_ok(),
+        USE_MAIN_THREAD_FOR_RENDERING
+            .set(main_thread_for_render)
+            .is_ok(),
         UPDATE_EVERY_N_PIXELS.set(update_frequency).is_ok(),
-        WRITING_BUFFER_START_CAPACITY.set(writing_buffer_capacity).is_ok(),
+        WRITING_BUFFER_START_CAPACITY
+            .set(writing_buffer_capacity)
+            .is_ok(),
     ];
 
     if successes.iter().any(|success| !success) {
