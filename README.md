@@ -29,6 +29,9 @@ Out of the following three settings, you must set two values to what you want an
 - `update_frequency`: After how many computed pixels the progress indicator should be updated.
 - `writing_buffer_capacity`: With more than one thread participating in rendering, new pixels' data will be stored until a continuous line of pixels is complete. This setting determines how many pixels' data can be stored until the storage needs to be increased.
 
+### Other
+- `use_build_function`: If set to true, instead of reading the `default_scene.json` file to create the scene, the `build_scene` function in the `scene_building` module is used for more possibilities when creating a custom scene.
+
 ## Customizing the 3D scene
 
 `default_scene.json` defines the 3D scene to render, i.e. the objects in the scene as well as the camera. It can be customized to build custom scenes.
