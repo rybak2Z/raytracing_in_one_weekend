@@ -9,7 +9,11 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Point3, direction: Vec3, time: Option<f64>) -> Ray {
-        Ray { origin, direction, time: time.unwrap_or(0.0) }
+        Ray {
+            origin,
+            direction,
+            time: time.unwrap_or(0.0),
+        }
     }
 
     pub fn origin(&self) -> Point3 {
