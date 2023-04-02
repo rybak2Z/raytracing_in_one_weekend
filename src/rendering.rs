@@ -1,6 +1,7 @@
 pub mod camera;
 pub mod hit_detection;
 pub mod material;
+pub mod moving_sphere;
 pub mod sphere;
 pub mod vec3;
 
