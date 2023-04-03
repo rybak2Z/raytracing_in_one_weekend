@@ -1,5 +1,8 @@
+mod deserialization;
+
+use deserialization::*;
+
 use once_cell::sync::OnceCell;
-use serde::Deserialize;
 
 use std::io::{self, ErrorKind::InvalidData};
 
@@ -16,35 +19,6 @@ pub static USE_MAIN_THREAD_FOR_RENDERING: OnceCell<bool> = OnceCell::new();
 pub static UPDATE_EVERY_N_PIXELS: OnceCell<u32> = OnceCell::new();
 pub static WRITING_BUFFER_START_CAPACITY: OnceCell<usize> = OnceCell::new();
 pub static USE_BUILD_FUNCTION: OnceCell<bool> = OnceCell::new();
-
-#[derive(Deserialize, Debug)]
-struct TomlConfiguration {
-    image: TomlImageConfiguration,
-    rendering: TomlRenderingConfiguration,
-    other: TomlOtherConfiguration,
-}
-
-#[derive(Deserialize, Debug)]
-struct TomlImageConfiguration {
-    aspect_ratio: Option<(u32, u32)>,
-    width: Option<u32>,
-    height: Option<u32>,
-}
-
-#[derive(Deserialize, Debug)]
-struct TomlRenderingConfiguration {
-    samples_per_pixel: u32,
-    max_child_ray_depth: u32,
-    threads: u32,
-    main_thread_for_render: bool,
-    update_frequency: u32,
-    writing_buffer_capacity: usize,
-}
-
-#[derive(Deserialize, Debug)]
-struct TomlOtherConfiguration {
-    use_build_function: bool,
-}
 
 pub fn err_invalid_data(message: &str) -> io::Error {
     io::Error::new(InvalidData, message)
@@ -93,46 +67,46 @@ pub fn generate_config() -> io::Result<()> {
     let (aspect_ratio, width, height) = determine_image_settings(image)?;
     let pixels_total = width * height;
 
-    let samples_per_pixel = rendering.samples_per_pixel;
-    if samples_per_pixel == 0 {
-        eprintln!("Warning: The number of samples per pixel is set to 0. The result will probably not look too interesting...");
-    }
-
-    let threads = rendering.threads;
-    if threads == 0 {
-        return Err(err_invalid_data(
-            "Number of threads must be greater or equal to 1.",
-        ));
-    }
-
-    let max_child_ray_depth = rendering.max_child_ray_depth;
-    let main_thread_for_render = rendering.main_thread_for_render;
-    let update_frequency = rendering.update_frequency;
-    let writing_buffer_capacity = rendering.writing_buffer_capacity;
-    let use_build_function = other.use_build_function;
+    validate_data(rendering.samples_per_pixel, rendering.threads)?;
 
     let successes = [
         ASPECT_RATIO.set(aspect_ratio).is_ok(),
         IMAGE_WIDTH.set(width).is_ok(),
         IMAGE_HEIGHT.set(height).is_ok(),
         PIXELS_TOTAL.set(pixels_total).is_ok(),
-        SAMPLES_PER_PIXEL.set(samples_per_pixel).is_ok(),
-        MAX_CHILD_RAYS.set(max_child_ray_depth).is_ok(),
-        THREADS.set(threads).is_ok(),
+        SAMPLES_PER_PIXEL.set(rendering.samples_per_pixel).is_ok(),
+        MAX_CHILD_RAYS.set(rendering.max_child_ray_depth).is_ok(),
+        THREADS.set(rendering.threads).is_ok(),
         USE_MAIN_THREAD_FOR_RENDERING
-            .set(main_thread_for_render)
+            .set(rendering.main_thread_for_render)
             .is_ok(),
-        UPDATE_EVERY_N_PIXELS.set(update_frequency).is_ok(),
+        UPDATE_EVERY_N_PIXELS
+            .set(rendering.update_frequency)
+            .is_ok(),
         WRITING_BUFFER_START_CAPACITY
-            .set(writing_buffer_capacity)
+            .set(rendering.writing_buffer_capacity)
             .is_ok(),
-        USE_BUILD_FUNCTION.set(use_build_function).is_ok(),
+        USE_BUILD_FUNCTION.set(other.use_build_function).is_ok(),
     ];
 
     if successes.iter().any(|success| !success) {
         return Err(io::Error::new(
             io::ErrorKind::Other,
             "An unexpected error occured.",
+        ));
+    }
+
+    Ok(())
+}
+
+fn validate_data(samples_per_pixel: u32, threads: u32) -> io::Result<()> {
+    if samples_per_pixel == 0 {
+        eprintln!("Warning: The number of samples per pixel is set to 0. The result will probably not look too interesting...");
+    }
+
+    if threads == 0 {
+        return Err(err_invalid_data(
+            "Number of threads must be greater or equal to 1.",
         ));
     }
 
