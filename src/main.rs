@@ -1,4 +1,4 @@
-use raytracing_in_one_weekend::config::*;
+use raytracing_in_one_weekend::config::{self, THREADS, USE_BUILD_FUNCTION};
 use raytracing_in_one_weekend::read_scene::read_scene;
 use raytracing_in_one_weekend::rendering::render;
 use raytracing_in_one_weekend::scene_building::build_scene;
@@ -7,7 +7,7 @@ use raytracing_in_one_weekend::writing::write_meta_data;
 use std::io::{self, Error, ErrorKind};
 
 fn main() -> io::Result<()> {
-    generate_config()?;
+    config::set_up()?;
 
     if *THREADS.get().unwrap() == 0 {
         return Err(Error::new(
