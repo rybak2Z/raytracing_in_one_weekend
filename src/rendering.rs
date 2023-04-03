@@ -6,6 +6,7 @@ pub mod sphere;
 pub mod vec3;
 
 mod aabb;
+mod bvh_node;
 mod coordinate_iterator;
 mod ray;
 

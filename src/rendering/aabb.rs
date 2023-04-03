@@ -2,7 +2,7 @@
 
 use crate::rendering::{Point3, Ray};
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct AABB {
     minimum: Point3,
     maximum: Point3,
@@ -16,11 +16,11 @@ impl AABB {
         }
     }
 
-    fn min(&self) -> Point3 {
+    pub fn min(&self) -> Point3 {
         self.minimum
     }
 
-    fn max(&self) -> Point3 {
+    pub fn max(&self) -> Point3 {
         self.maximum
     }
 }
