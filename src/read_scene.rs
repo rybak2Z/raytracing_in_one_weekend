@@ -25,25 +25,20 @@ fn read_scene_file() -> io::Result<Scene> {
 }
 
 fn create_camera(json_camera: JsonCamera) -> Camera {
-    let coords = json_camera.look_from;
-    let look_from = Point3::new(coords.x, coords.y, coords.z);
-    let coords = json_camera.look_at;
-    let look_at = Point3::new(coords.x, coords.y, coords.z);
-    let vec = json_camera.view_up_direction;
-    let view_up = Vec3::new(vec.x, vec.y, vec.z);
-    let start_time = json_camera.start_time;
-    let end_time = json_camera.end_time;
+    let from = json_camera.look_from;
+    let at = json_camera.look_at;
+    let up = json_camera.view_up_direction;
 
     let camera_config = CameraConfiguration {
-        look_from,
-        look_at,
-        view_up,
+        look_from: Point3::new(from.x, from.y, from.z),
+        look_at: Point3::new(at.x, at.y, at.z),
+        view_up: Vec3::new(up.x, up.y, up.z),
         vertical_fov: json_camera.vertical_fov_degrees,
         aperture: json_camera.aperture,
         focus_distance: json_camera.focus_distance,
         focal_length: json_camera.focal_length,
-        start_time: Some(start_time),
-        end_time: Some(end_time),
+        start_time: Some(json_camera.start_time),
+        end_time: Some(json_camera.end_time),
     };
 
     Camera::new(camera_config)
