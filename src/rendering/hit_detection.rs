@@ -61,7 +61,7 @@ impl Clone for Box<dyn Hittable> {
 
 #[derive(Clone)]
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>,
+    pub objects: Vec<Box<dyn Hittable>>,
 }
 
 impl HittableList {
