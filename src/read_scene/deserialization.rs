@@ -1,6 +1,8 @@
 mod to_internal_types;
 mod validation;
 
+pub use validation::Validate;
+
 use serde::Deserialize;
 
 #[derive(Deserialize)]
