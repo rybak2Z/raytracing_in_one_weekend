@@ -1,100 +1,12 @@
-mod validation;
+mod deserialization;
+
+use deserialization::*;
 
 use crate::rendering::{camera::*, HittableList, Point3, Vec3};
-
-use serde::Deserialize;
 
 use std::io;
 
 const SCENE_PATH: &str = "default_scene.json";
-
-#[derive(Deserialize)]
-struct Scene {
-    camera: JsonCamera,
-    materials: Vec<JsonMaterial>,
-    objects: Vec<JsonSphere>,
-}
-
-#[derive(Deserialize)]
-struct JsonVec3 {
-    x: f64,
-    y: f64,
-    z: f64,
-}
-
-#[derive(Deserialize)]
-struct JsonCamera {
-    look_from: JsonVec3,
-    look_at: JsonVec3,
-    view_up_direction: JsonVec3,
-    vertical_fov_degrees: f64,
-    aperture: f64,
-    focus_distance: Option<f64>,
-    focal_length: f64,
-    #[serde(default)]
-    start_time: f64,
-    #[serde(default = "end_time_default")]
-    end_time: f64,
-}
-
-fn end_time_default() -> f64 {
-    1.0
-}
-
-#[derive(Deserialize)]
-#[serde(untagged)]
-enum JsonMaterial {
-    ReferenceToName(String),
-    Literal(JsonMaterialLiteral),
-}
-
-#[derive(Deserialize)]
-struct JsonMaterialLiteral {
-    name: Option<String>,
-    #[serde(rename = "type")] // "type" is a reserved keyword is rust
-    type_: JsonMaterialOptions,
-    color: Option<JsonColor>,
-    refractive_index: Option<f64>,
-    fuzziness: Option<f64>,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
-pub enum JsonMaterialOptions {
-    Diffuse,
-    Metal,
-    Dialectric,
-}
-
-impl std::fmt::Display for JsonMaterialOptions {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-#[derive(Deserialize)]
-struct JsonColor {
-    rgb: (f64, f64, f64),
-    normalized: bool,
-}
-
-#[derive(Deserialize)]
-struct JsonSphere {
-    _name: Option<String>,
-    coordinates: (f64, f64, f64),
-    movement: Option<JsonMovement>,
-    radius: f64,
-    material: JsonMaterial,
-}
-
-#[derive(Deserialize)]
-struct JsonMovement {
-    target: (f64, f64, f64),
-    #[serde(default)]
-    start_time: f64,
-    #[serde(default = "end_time_default")]
-    end_time: f64,
-}
 
 pub fn read_scene() -> io::Result<(HittableList, Camera)> {
     let scene = read_scene_file()?;
