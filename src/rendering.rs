@@ -9,6 +9,7 @@ mod aabb;
 mod coordinate_iterator;
 mod ray;
 
+pub use aabb::AABB;
 pub use hit_detection::{HitRecord, Hittable, HittableList};
 pub use ray::Ray;
 pub use vec3::{

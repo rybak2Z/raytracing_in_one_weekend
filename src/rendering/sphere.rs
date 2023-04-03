@@ -1,6 +1,6 @@
 use super::{
     hit_detection::{HitRecord, Hittable},
-    Material, Point3, Ray, Vec3,
+    Material, Point3, Ray, Vec3, AABB,
 };
 
 #[derive(Clone)]
@@ -39,6 +39,11 @@ impl Hittable for Sphere {
         record.material = self.material.clone();
 
         Some(record)
+    }
+
+    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AABB> {
+        let offset = Vec3::new(self.radius, self.radius, self.radius);
+        Some(AABB::new(self.center - offset, self.center + offset))
     }
 }
 

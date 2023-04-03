@@ -1,6 +1,6 @@
 use super::{
     material::{Lambertian, Material},
-    Color, Point3, Ray, Vec3,
+    Color, Point3, Ray, Vec3, AABB,
 };
 
 pub struct HitRecord {
@@ -39,6 +39,7 @@ impl Default for HitRecord {
 
 pub trait Hittable: CloneHittable + Send + Sync {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AABB>;
 }
 
 // from https://users.rust-lang.org/t/solved-is-it-possible-to-clone-a-boxed-trait-object/1714/7
@@ -95,6 +96,24 @@ impl Hittable for HittableList {
             true => Some(closest),
             false => None,
         }
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AABB> {
+        if self.objects.is_empty() {
+            return None;
+        }
+
+        let mut temp_box = self.objects[0].bounding_box(time0, time1)?;
+
+        for object in self.objects.iter() {
+            if let Some(bbox) = object.bounding_box(time0, time1) {
+                temp_box = AABB::surrounding_box(temp_box, bbox);
+            } else {
+                return None;
+            }
+        }
+
+        Some(temp_box)
     }
 }
 

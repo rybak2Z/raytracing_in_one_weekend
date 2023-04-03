@@ -1,5 +1,5 @@
 use super::{
-    sphere::find_smallest_valid_solution, HitRecord, Hittable, Material, Point3, Ray, Vec3,
+    sphere::find_smallest_valid_solution, HitRecord, Hittable, Material, Point3, Ray, Vec3, AABB,
 };
 
 #[derive(Clone)]
@@ -56,5 +56,14 @@ impl Hittable for MovingSphere {
         record.material = self.material.clone();
 
         Some(record)
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AABB> {
+        let offset = Vec3::new(self.radius, self.radius, self.radius);
+
+        let box0 = AABB::new(self.center(time0) - offset, self.center(time0) + offset);
+        let box1 = AABB::new(self.center(time1) - offset, self.center(time1) + offset);
+
+        Some(AABB::surrounding_box(box0, box1))
     }
 }
