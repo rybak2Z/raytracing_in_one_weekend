@@ -14,8 +14,12 @@ use std::io;
 pub static mut DEFINED_MATERIALS: Lazy<HashMap<String, Box<dyn Material>>> =
     Lazy::new(HashMap::default);
 
-impl Scene {
-    pub fn validate(&self) -> io::Result<()> {
+pub trait Validate {
+    fn validate(&self) -> io::Result<()>;
+}
+
+impl Validate for Scene {
+    fn validate(&self) -> io::Result<()> {
         self.camera.validate()?;
         for material in self.materials.iter() {
             material.validate()?;
@@ -27,8 +31,8 @@ impl Scene {
     }
 }
 
-impl JsonCamera {
-    pub fn validate(&self) -> io::Result<()> {
+impl Validate for JsonCamera {
+    fn validate(&self) -> io::Result<()> {
         if self.vertical_fov_degrees <= 0.0 || self.vertical_fov_degrees >= 180.0 {
             return Err(err_invalid_data("FOV must be between 0 and 180 degrees"));
         }
@@ -51,8 +55,8 @@ impl JsonCamera {
     }
 }
 
-impl JsonMaterial {
-    pub fn validate(&self) -> io::Result<()> {
+impl Validate for JsonMaterial {
+    fn validate(&self) -> io::Result<()> {
         if let Self::ReferenceToName(name) = self {
             unsafe {
                 if DEFINED_MATERIALS.contains_key(name) {
@@ -69,8 +73,8 @@ impl JsonMaterial {
     }
 }
 
-impl JsonMaterialLiteral {
-    pub fn validate(&self) -> io::Result<()> {
+impl Validate for JsonMaterialLiteral {
+    fn validate(&self) -> io::Result<()> {
         match self.type_ {
             JsonMaterialOptions::Diffuse => {
                 if let Some(c) = &self.color {
@@ -114,7 +118,9 @@ impl JsonMaterialLiteral {
 
         Ok(())
     }
+}
 
+impl JsonMaterialLiteral {
     fn add_to_defined_materials(&self, name: &str) {
         unsafe {
             DEFINED_MATERIALS.insert(name.to_string(), self.to_material());
@@ -122,8 +128,8 @@ impl JsonMaterialLiteral {
     }
 }
 
-impl JsonColor {
-    pub fn validate(&self) -> io::Result<()> {
+impl Validate for JsonColor {
+    fn validate(&self) -> io::Result<()> {
         let rgb = vec![self.rgb.0, self.rgb.1, self.rgb.2];
         match self.normalized {
             true => {
@@ -146,8 +152,8 @@ impl JsonColor {
     }
 }
 
-impl JsonSphere {
-    pub fn validate(&self) -> io::Result<()> {
+impl Validate for JsonSphere {
+    fn validate(&self) -> io::Result<()> {
         if self.radius < 0.0 {
             eprintln!("Warning: Sphere with negative radius created. This inverts the normals.");
         }
