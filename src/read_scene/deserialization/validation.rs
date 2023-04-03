@@ -4,7 +4,7 @@ use super::{
     Scene,
 };
 
-use crate::config::err_invalid_data;
+use crate::config::set_up::err_invalid_data;
 use crate::rendering::material::*;
 
 use once_cell::sync::Lazy;
