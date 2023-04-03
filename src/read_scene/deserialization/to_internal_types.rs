@@ -5,23 +5,33 @@ use crate::rendering::{
     material::*, moving_sphere::MovingSphere, sphere::Sphere, Color, Hittable, Point3,
 };
 
-impl JsonMaterial {
-    pub fn to_material(&self) -> Box<dyn Material> {
+pub trait ToInternal {
+    type Output;
+
+    fn to_internal(&self) -> Self::Output;
+}
+
+impl ToInternal for JsonMaterial {
+    type Output = Box<dyn Material>;
+
+    fn to_internal(&self) -> Self::Output {
         match self {
             Self::ReferenceToName(name) => unsafe { DEFINED_MATERIALS.get(name).unwrap().clone() },
-            Self::Literal(literal) => literal.to_material(),
+            Self::Literal(literal) => literal.to_internal(),
         }
     }
 }
 
-impl JsonMaterialLiteral {
-    pub fn to_material(&self) -> Box<dyn Material> {
+impl ToInternal for JsonMaterialLiteral {
+    type Output = Box<dyn Material>;
+
+    fn to_internal(&self) -> Box<dyn Material> {
         match self.type_ {
             JsonMaterialOptions::Diffuse => {
-                Box::new(Lambertian::new(self.color.as_ref().unwrap().to_color()))
+                Box::new(Lambertian::new(self.color.as_ref().unwrap().to_internal()))
             }
             JsonMaterialOptions::Metal => Box::new(Metal::new(
-                self.color.as_ref().unwrap().to_color(),
+                self.color.as_ref().unwrap().to_internal(),
                 self.fuzziness.unwrap(),
             )),
             JsonMaterialOptions::Dialectric => {
@@ -31,8 +41,10 @@ impl JsonMaterialLiteral {
     }
 }
 
-impl JsonColor {
-    pub fn to_color(&self) -> Color {
+impl ToInternal for JsonColor {
+    type Output = Color;
+
+    fn to_internal(&self) -> Self::Output {
         let (mut r, mut g, mut b) = self.rgb;
         if !self.normalized {
             r /= 255.0;
@@ -43,8 +55,10 @@ impl JsonColor {
     }
 }
 
-impl JsonSphere {
-    pub fn to_sphere(&self) -> Box<dyn Hittable> {
+impl ToInternal for JsonSphere {
+    type Output = Box<dyn Hittable>;
+
+    fn to_internal(&self) -> Box<dyn Hittable> {
         let (x, y, z) = (self.coordinates.0, self.coordinates.1, self.coordinates.2);
         let point = Point3::new(x, y, z);
         if let Some(mov) = &self.movement {
@@ -55,10 +69,10 @@ impl JsonSphere {
                 mov.start_time,
                 mov.end_time,
                 self.radius,
-                self.material.to_material(),
+                self.material.to_internal(),
             ))
         } else {
-            Box::new(Sphere::new(point, self.radius, self.material.to_material()))
+            Box::new(Sphere::new(point, self.radius, self.material.to_internal()))
         }
     }
 }
