@@ -3,7 +3,7 @@
 use crate::rendering::{Point3, Ray};
 
 #[derive(Clone)]
-struct AABB {
+pub struct AABB {
     minimum: Point3,
     maximum: Point3,
 }
@@ -26,7 +26,7 @@ impl AABB {
 }
 
 impl AABB {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> bool {
+    pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> bool {
         let dimensions = 0..3;
         for d in dimensions {
             let inv_direction = 1.0 / ray.direction().get(d);
@@ -46,5 +46,27 @@ impl AABB {
         }
 
         true
+    }
+
+    pub fn surrounding_box(box0: AABB, box1: AABB) -> AABB {
+        let smallest = Point3::new(
+            (box0.min().x()).min(box1.min().x()),
+            (box0.min().y()).min(box1.min().y()),
+            (box0.min().z()).min(box1.min().z()),
+        );
+
+        let biggest = Point3::new(
+            (box0.min().x()).max(box1.min().x()),
+            (box0.min().y()).max(box1.min().y()),
+            (box0.min().z()).max(box1.min().z()),
+        );
+
+        AABB::new(smallest, biggest)
+    }
+}
+
+impl std::default::Default for AABB {
+    fn default() -> Self {
+        AABB::new(Point3::default(), Point3::default())
     }
 }
