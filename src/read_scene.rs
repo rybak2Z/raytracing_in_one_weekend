@@ -52,7 +52,7 @@ fn create_camera(json_camera: JsonCamera) -> Camera {
 fn create_world(json_objects: Vec<JsonSphere>) -> HittableList {
     let mut world = HittableList::default();
     for json_sphere in json_objects {
-        world.add(json_sphere.to_sphere());
+        world.add(json_sphere.to_internal());
     }
     world
 }

@@ -1,3 +1,4 @@
+use super::to_internal_types::ToInternal;
 use super::{
     JsonCamera, JsonColor, JsonMaterial, JsonMaterialLiteral, JsonMaterialOptions, JsonSphere,
     Scene,
@@ -135,7 +136,7 @@ impl JsonMaterialLiteral {
 
     fn add_to_defined_materials(&self, name: &str) {
         unsafe {
-            DEFINED_MATERIALS.insert(name.to_string(), self.to_material());
+            DEFINED_MATERIALS.insert(name.to_string(), self.to_internal());
         }
     }
 }
