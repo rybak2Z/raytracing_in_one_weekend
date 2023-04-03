@@ -33,6 +33,10 @@ impl Vec3 {
         self.components[2]
     }
 
+    pub fn get(&self, dimension: usize) -> f64 {
+        self.components[dimension]
+    }
+
     pub fn length(&self) -> f64 {
         self.length_squared().sqrt()
     }

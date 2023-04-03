@@ -5,6 +5,7 @@ pub mod moving_sphere;
 pub mod sphere;
 pub mod vec3;
 
+mod aabb;
 mod coordinate_iterator;
 mod ray;
 
