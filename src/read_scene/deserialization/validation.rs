@@ -76,40 +76,9 @@ impl Validate for JsonMaterial {
 impl Validate for JsonMaterialLiteral {
     fn validate(&self) -> io::Result<()> {
         match self.type_ {
-            JsonMaterialOptions::Diffuse => {
-                if let Some(c) = &self.color {
-                    c.validate()?;
-                } else {
-                    return Err(err_invalid_data("Diffuse material needs a color."));
-                }
-            }
-            JsonMaterialOptions::Metal => {
-                if let Some(fuzz) = self.fuzziness {
-                    if fuzz < 0.0 {
-                        return Err(err_invalid_data("Metal fuzziness cannot be negative"));
-                    }
-                } else {
-                    return Err(err_invalid_data(
-                        "Metal material needs the property \"fuzziness\".",
-                    ));
-                }
-                if let Some(c) = &self.color {
-                    c.validate()?;
-                } else {
-                    return Err(err_invalid_data("Metal material needs a color."));
-                }
-            }
-            JsonMaterialOptions::Dialectric => {
-                if let Some(rf) = self.refractive_index {
-                    if rf < 0.0 {
-                        return Err(err_invalid_data("Refractive index cannot be negative."));
-                    }
-                } else {
-                    return Err(err_invalid_data(
-                        "Dialectric material needs the property \"refractive_index\"",
-                    ));
-                }
-            }
+            JsonMaterialOptions::Diffuse => self.validate_diffuse()?,
+            JsonMaterialOptions::Metal => self.validate_metal()?,
+            JsonMaterialOptions::Dialectric => self.validate_dialectric()?,
         }
 
         if let Some(n) = &self.name {
@@ -121,6 +90,49 @@ impl Validate for JsonMaterialLiteral {
 }
 
 impl JsonMaterialLiteral {
+    fn validate_diffuse(&self) -> io::Result<()> {
+        if let Some(c) = &self.color {
+            c.validate()?;
+        } else {
+            return Err(err_invalid_data("Diffuse material needs a color."));
+        }
+
+        Ok(())
+    }
+
+    fn validate_metal(&self) -> io::Result<()> {
+        if let Some(fuzz) = self.fuzziness {
+            if fuzz < 0.0 {
+                return Err(err_invalid_data("Metal fuzziness cannot be negative"));
+            }
+        } else {
+            return Err(err_invalid_data(
+                "Metal material needs the property \"fuzziness\".",
+            ));
+        }
+        if let Some(c) = &self.color {
+            c.validate()?;
+        } else {
+            return Err(err_invalid_data("Metal material needs a color."));
+        }
+
+        Ok(())
+    }
+
+    fn validate_dialectric(&self) -> io::Result<()> {
+        if let Some(rf) = self.refractive_index {
+            if rf < 0.0 {
+                return Err(err_invalid_data("Refractive index cannot be negative."));
+            }
+        } else {
+            return Err(err_invalid_data(
+                "Dialectric material needs the property \"refractive_index\"",
+            ));
+        }
+
+        Ok(())
+    }
+
     fn add_to_defined_materials(&self, name: &str) {
         unsafe {
             DEFINED_MATERIALS.insert(name.to_string(), self.to_material());
@@ -132,20 +144,30 @@ impl Validate for JsonColor {
     fn validate(&self) -> io::Result<()> {
         let rgb = vec![self.rgb.0, self.rgb.1, self.rgb.2];
         match self.normalized {
-            true => {
-                if rgb.iter().any(|num| *num < 0.0 || *num > 1.0) {
-                    return Err(err_invalid_data(
-                        "Normalized rgb values need to be between 0 and 1",
-                    ));
-                }
-            }
-            false => {
-                if rgb.iter().any(|num| *num < 0.0 || *num > 255.0) {
-                    return Err(err_invalid_data(
-                        "Non normalized rgb values need to be between 0 and 255",
-                    ));
-                }
-            }
+            true => self.validate_normalized(rgb)?,
+            false => self.validate_non_normalized(rgb)?,
+        }
+
+        Ok(())
+    }
+}
+
+impl JsonColor {
+    fn validate_normalized(&self, rgb: Vec<f64>) -> io::Result<()> {
+        if rgb.iter().any(|num| *num < 0.0 || *num > 1.0) {
+            return Err(err_invalid_data(
+                "Normalized rgb values need to be between 0 and 1",
+            ));
+        }
+
+        Ok(())
+    }
+
+    fn validate_non_normalized(&self, rgb: Vec<f64>) -> io::Result<()> {
+        if rgb.iter().any(|num| *num < 0.0 || *num > 255.0) {
+            return Err(err_invalid_data(
+                "Non normalized rgb values need to be between 0 and 255",
+            ));
         }
 
         Ok(())
