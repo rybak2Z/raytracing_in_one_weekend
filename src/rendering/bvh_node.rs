@@ -37,16 +37,14 @@ impl BvhNode {
             _ => panic!("Invalid random axis in BvhNode constructor."),
         };
 
-        let object_span = up_to_obj - from_obj;
-
         let left;
         let right;
-        if object_span == 1 {
-            left = objects[from_obj].clone();
-            right = objects[from_obj].clone();
-        } else if object_span == 2 {
-            let first = &objects[from_obj];
-            let second = &objects[from_obj + 1];
+        if objects.len() == 1 {
+            left = objects[0].clone();
+            right = objects[0].clone();
+        } else if objects.len() == 2 {
+            let first = &objects[0];
+            let second = &objects[1];
             match comparator(first, second) {
                 Ordering::Less | Ordering::Equal => {
                     left = first.clone();
@@ -59,12 +57,12 @@ impl BvhNode {
             }
         } else {
             objects.sort_by(comparator);
-            let mid = from_obj + object_span / 2;
+            let mid = objects.len() / 2;
             left = Box::new(BvhNode::construct_tree(
-                &objects, from_obj, mid, time0, time1,
+                &objects, 0, mid, time0, time1,
             ));
             right = Box::new(BvhNode::construct_tree(
-                &objects, mid, up_to_obj, time0, time1,
+                &objects, mid, objects.len(), time0, time1,
             ));
         }
 
@@ -87,10 +85,17 @@ impl Hittable for BvhNode {
         }
 
         let hit_left = self.left.hit(ray_in, t_min, t_max);
+
+        let t_max = match &hit_left {
+            Some(hit_record) => hit_record.t,
+            None => t_max,
+        };
         let hit_right = self.right.hit(ray_in, t_min, t_max);
 
-        if hit_left.is_some() || hit_right.is_some() {
-            Some(HitRecord::default())
+        if hit_right.is_some() {
+            hit_right
+        } else if hit_left.is_some() {
+            hit_left
         } else {
             None
         }
