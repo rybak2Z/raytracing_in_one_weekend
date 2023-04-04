@@ -48,12 +48,9 @@ impl Hittable for MovingSphere {
         let discriminant = half_b * half_b - a * c;
         let solution = find_smallest_valid_solution(a, half_b, discriminant, t_min, t_max)?;
 
-        let mut record = HitRecord::default();
-        record.t = solution;
-        record.point = ray.at(record.t);
-        let outward_normal = (record.point - self.center(ray.time())) / self.radius;
-        record.set_face_normal(ray, outward_normal);
-        record.material = self.material.clone();
+        let hit_point = ray.at(solution);
+        let outward_normal = (hit_point - self.center(ray.time())) / self.radius;
+        let record = HitRecord::new(ray, solution, outward_normal, self.material.clone());
 
         Some(record)
     }
