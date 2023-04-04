@@ -1,4 +1,4 @@
-use super::{Hittable, HitRecord, AABB};
+use super::{HitRecord, Hittable, AABB};
 
 use crate::rendering::Ray;
 
