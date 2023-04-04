@@ -39,16 +39,16 @@ impl AABB {
     }
 
     fn get_intersect_interval(&self, ray: &Ray, dimension: usize) -> (f64, f64) {
-            let d = dimension;
-            let inv_direction = 1.0 / ray.direction().get(d);
-            let mut t0 = (self.min().get(d) - ray.origin().get(d)) * inv_direction;
-            let mut t1 = (self.max().get(d) - ray.origin().get(d)) * inv_direction;
+        let d = dimension;
+        let inv_direction = 1.0 / ray.direction().get(d);
+        let mut t0 = (self.min().get(d) - ray.origin().get(d)) * inv_direction;
+        let mut t1 = (self.max().get(d) - ray.origin().get(d)) * inv_direction;
 
-            if inv_direction < 0.0 {
-                (t0, t1) = (t1, t0);
-            }
+        if inv_direction < 0.0 {
+            (t0, t1) = (t1, t0);
+        }
 
-            (t0, t1)
+        (t0, t1)
     }
 
     pub fn surrounding_box(box0: AABB, box1: AABB) -> AABB {

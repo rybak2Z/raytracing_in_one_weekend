@@ -81,33 +81,44 @@ fn get_random_axis_comparator() -> Comparator {
     }
 }
 
-fn order_two(objects: &[Box<dyn Hittable>], comparator: Comparator) -> (Box<dyn Hittable>, Box<dyn Hittable>) {
+fn order_two(
+    objects: &[Box<dyn Hittable>],
+    comparator: Comparator,
+) -> (Box<dyn Hittable>, Box<dyn Hittable>) {
     let first = &objects[0];
     let second = &objects[1];
     match comparator(first, second) {
-        Ordering::Less | Ordering::Equal => {
-            (first.clone(), second.clone())
-        }
-        Ordering::Greater => {
-            (second.clone(), first.clone())
-        }
+        Ordering::Less | Ordering::Equal => (first.clone(), second.clone()),
+        Ordering::Greater => (second.clone(), first.clone()),
     }
 }
 
-fn construct_sub_trees(objects: &mut [Box<dyn Hittable>], comparator: Comparator, time0: f64, time1: f64) -> (Box<dyn Hittable>, Box<dyn Hittable>) {
+fn construct_sub_trees(
+    objects: &mut [Box<dyn Hittable>],
+    comparator: Comparator,
+    time0: f64,
+    time1: f64,
+) -> (Box<dyn Hittable>, Box<dyn Hittable>) {
     objects.sort_by(comparator);
     let mid = objects.len() / 2;
-    let left = Box::new(BvhNode::construct_tree(
-        &objects, 0, mid, time0, time1,
-    ));
+    let left = Box::new(BvhNode::construct_tree(&objects, 0, mid, time0, time1));
     let right = Box::new(BvhNode::construct_tree(
-        &objects, mid, objects.len(), time0, time1,
+        &objects,
+        mid,
+        objects.len(),
+        time0,
+        time1,
     ));
 
     (left, right)
 }
 
-fn get_surrounding_box(left: &Box<dyn Hittable>, right: &Box<dyn Hittable>, time0: f64, time1: f64) -> AABB {
+fn get_surrounding_box(
+    left: &Box<dyn Hittable>,
+    right: &Box<dyn Hittable>,
+    time0: f64,
+    time1: f64,
+) -> AABB {
     let left_box = left.bounding_box(time0, time1);
     let right_box = right.bounding_box(time0, time1);
     if left_box.is_none() || right_box.is_none() {

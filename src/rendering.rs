@@ -8,7 +8,7 @@ pub mod vec3;
 mod coordinate_iterator;
 mod ray;
 
-pub use hit_detection::{HitRecord, Hittable, HittableList, AABB, BvhNode};
+pub use hit_detection::{BvhNode, HitRecord, Hittable, HittableList, AABB};
 pub use ray::Ray;
 pub use vec3::{
     color::{self, Color},
