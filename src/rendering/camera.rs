@@ -30,6 +30,14 @@ pub struct Camera {
 }
 
 impl Camera {
+    pub fn get_start_time(&self) -> f64 {
+        self.time0
+    }
+
+    pub fn get_end_time(&self) -> f64 {
+        self.time1
+    }
+
     pub fn new(config: CameraConfiguration) -> Camera {
         let (viewport_width, viewport_height) = calculate_viewport_dimensions(config.vertical_fov);
         let (u, v, w) =
