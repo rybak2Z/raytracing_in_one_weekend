@@ -30,14 +30,6 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn get_start_time(&self) -> f64 {
-        self.time0
-    }
-
-    pub fn get_end_time(&self) -> f64 {
-        self.time1
-    }
-
     pub fn new(config: CameraConfiguration) -> Camera {
         let (viewport_width, viewport_height) = calculate_viewport_dimensions(config.vertical_fov);
         let (u, v, w) =
@@ -66,6 +58,14 @@ impl Camera {
             time0: config.start_time.unwrap_or(0.0),
             time1: config.end_time.unwrap_or(1.0),
         }
+    }
+
+    pub fn get_start_time(&self) -> f64 {
+        self.time0
+    }
+
+    pub fn get_end_time(&self) -> f64 {
+        self.time1
     }
 
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {
