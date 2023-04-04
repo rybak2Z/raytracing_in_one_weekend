@@ -11,6 +11,7 @@ mod coordinate_iterator;
 mod ray;
 
 pub use aabb::AABB;
+pub use bvh_node::BvhNode;
 pub use hit_detection::{HitRecord, Hittable, HittableList};
 pub use ray::Ray;
 pub use vec3::{
@@ -35,41 +36,41 @@ use std::sync::{
 use std::thread::{self, JoinHandle};
 
 struct RenderingTools<'a> {
-    world: &'a HittableList,
+    bvh: &'a BvhNode,
     camera: &'a Camera,
     rng: ThreadRng,
 }
 
 impl RenderingTools<'_> {
-    pub fn new<'a>(world: &'a HittableList, camera: &'a Camera) -> RenderingTools<'a> {
+    pub fn new<'a>(bvh: &'a BvhNode, camera: &'a Camera) -> RenderingTools<'a> {
         RenderingTools {
-            world,
+            bvh,
             camera,
             rng: thread_rng(),
         }
     }
 }
 
-pub fn render(world: HittableList, camera: Camera) -> io::Result<()> {
+pub fn render(bvh: BvhNode, camera: Camera) -> io::Result<()> {
     let coordinate_iterator = Arc::new(Mutex::new(CoordinateIterator::new()));
     let (tx, rx) = mpsc::channel::<(Color, (u32, u32))>();
 
     let mut handles: Vec<JoinHandle<()>> = vec![];
     for _ in 0..(THREADS.get().unwrap() - 1) {
-        let world_copy = world.clone();
+        let bvh_copy = bvh.clone();
         let camera_copy = camera.clone();
         let tx_copy = tx.clone();
         let shared_iterator = Arc::clone(&coordinate_iterator);
 
         let handle = thread::spawn(move || {
-            do_work(world_copy, camera_copy, shared_iterator, tx_copy);
+            do_work(bvh_copy, camera_copy, shared_iterator, tx_copy);
         });
 
         handles.push(handle);
     }
 
     let mut writing_sync = WritingSynchronizer::new();
-    main_thread_work(world, camera, &mut writing_sync, coordinate_iterator, &rx)?;
+    main_thread_work(bvh, camera, &mut writing_sync, coordinate_iterator, &rx)?;
 
     finish(handles, writing_sync, rx, tx)?;
 
@@ -77,12 +78,12 @@ pub fn render(world: HittableList, camera: Camera) -> io::Result<()> {
 }
 
 fn do_work(
-    world: HittableList,
+    bvh: BvhNode,
     camera: Camera,
     shared_iterator: Arc<Mutex<CoordinateIterator>>,
     tx: Sender<(Color, (u32, u32))>,
 ) {
-    let mut render_tools = RenderingTools::new(&world, &camera);
+    let mut render_tools = RenderingTools::new(&bvh, &camera);
 
     while let Some((row, col)) = get_next_coordinates(&shared_iterator) {
         let pixel_color = calculate_pixel_color(row, col, &mut render_tools);
@@ -91,13 +92,13 @@ fn do_work(
 }
 
 fn main_thread_work(
-    world: HittableList,
+    bvh: BvhNode,
     camera: Camera,
     writing_sync: &mut WritingSynchronizer,
     shared_iterator: Arc<Mutex<CoordinateIterator>>,
     rx: &Receiver<(Color, (u32, u32))>,
 ) -> io::Result<()> {
-    let mut render_tools = RenderingTools::new(&world, &camera);
+    let mut render_tools = RenderingTools::new(&bvh, &camera);
 
     while !writing_sync.all_data_written() {
         while let Ok((color, (row, col))) = rx.try_recv() {
@@ -168,7 +169,7 @@ fn calculate_sample(row: u32, col: u32, render_tools: &mut RenderingTools) -> Co
     let ray = render_tools.camera.get_ray(u, v);
     get_ray_color(
         &ray,
-        render_tools.world,
+        render_tools.bvh,
         *MAX_CHILD_RAYS.get().unwrap() as i32,
     )
 }
@@ -179,7 +180,7 @@ fn get_uv(row: u32, col: u32, rng: &mut ThreadRng) -> (f64, f64) {
     (u, v)
 }
 
-fn get_ray_color(ray: &Ray, world: &HittableList, depth: i32) -> Color {
+fn get_ray_color(ray: &Ray, world: &BvhNode, depth: i32) -> Color {
     if depth == 0 {
         return Color::default();
     }

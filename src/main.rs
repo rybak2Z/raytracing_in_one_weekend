@@ -1,6 +1,6 @@
 use raytracing_in_one_weekend::config::{self, THREADS, USE_BUILD_FUNCTION};
 use raytracing_in_one_weekend::read_scene::read_scene;
-use raytracing_in_one_weekend::rendering::render;
+use raytracing_in_one_weekend::rendering::{render, BvhNode};
 use raytracing_in_one_weekend::scene_building::build_scene;
 use raytracing_in_one_weekend::writing::write_meta_data;
 
@@ -22,8 +22,9 @@ fn main() -> io::Result<()> {
         true => build_scene(),
         false => read_scene()?,
     };
+    let bvh = BvhNode::new(&world, camera.get_start_time(), camera.get_end_time());
 
-    render(world, camera)?;
+    render(bvh, camera)?;
     eprintln!("\nDone.");
 
     Ok(())
