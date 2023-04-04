@@ -56,9 +56,9 @@ impl AABB {
         );
 
         let biggest = Point3::new(
-            (box0.min().x()).max(box1.min().x()),
-            (box0.min().y()).max(box1.min().y()),
-            (box0.min().z()).max(box1.min().z()),
+            (box0.max().x()).max(box1.max().x()),
+            (box0.max().y()).max(box1.max().y()),
+            (box0.max().z()).max(box1.max().z()),
         );
 
         AABB::new(smallest, biggest)
