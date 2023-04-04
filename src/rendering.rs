@@ -5,14 +5,10 @@ pub mod moving_sphere;
 pub mod sphere;
 pub mod vec3;
 
-mod aabb;
-mod bvh_node;
 mod coordinate_iterator;
 mod ray;
 
-pub use aabb::AABB;
-pub use bvh_node::BvhNode;
-pub use hit_detection::{HitRecord, Hittable, HittableList};
+pub use hit_detection::{HitRecord, Hittable, HittableList, AABB, BvhNode};
 pub use ray::Ray;
 pub use vec3::{
     color::{self, Color},
