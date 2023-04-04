@@ -29,6 +29,17 @@ impl AABB {
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> bool {
         let dimensions = 0..3;
         for d in dimensions {
+            let (t0, t1) = self.get_intersect_interval(ray, d);
+            if !do_intervals_overlap(t_min, t_max, t0, t1) {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    fn get_intersect_interval(&self, ray: &Ray, dimension: usize) -> (f64, f64) {
+            let d = dimension;
             let inv_direction = 1.0 / ray.direction().get(d);
             let mut t0 = (self.min().get(d) - ray.origin().get(d)) * inv_direction;
             let mut t1 = (self.max().get(d) - ray.origin().get(d)) * inv_direction;
@@ -37,15 +48,7 @@ impl AABB {
                 (t0, t1) = (t1, t0);
             }
 
-            let t_min = t_min.max(t0);
-            let t_max = t_max.min(t1);
-
-            if t_max <= t_min {
-                return false;
-            }
-        }
-
-        true
+            (t0, t1)
     }
 
     pub fn surrounding_box(box0: AABB, box1: AABB) -> AABB {
@@ -69,4 +72,11 @@ impl std::default::Default for AABB {
     fn default() -> Self {
         AABB::new(Point3::default(), Point3::default())
     }
+}
+
+fn do_intervals_overlap(a_start: f64, a_end: f64, b_start: f64, b_end: f64) -> bool {
+    let c_start = a_start.max(b_start);
+    let c_end = a_end.min(b_end);
+
+    c_start < c_end
 }
