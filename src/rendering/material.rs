@@ -60,7 +60,7 @@ impl Material for Lambertian {
 
         Some(Scatter {
             ray: scattered_ray,
-            attenuation: self.albedo.value(hit_record.u, hit_record.v),
+            attenuation: self.albedo.value(hit_record.u, hit_record.v, hit_record.point),
         })
     }
 }
