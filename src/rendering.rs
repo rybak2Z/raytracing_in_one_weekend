@@ -11,6 +11,7 @@ mod texture;
 
 pub use hit_detection::{BvhNode, HitRecord, Hittable, HittableList, AABB};
 pub use ray::Ray;
+pub use texture::{SolidColor, Texture};
 pub use vec3::{
     color::{self, Color},
     Point3, Vec3,
