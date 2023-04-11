@@ -1,6 +1,6 @@
 use super::{
     color::{self, Color},
-    HitRecord, Ray, Vec3,
+    HitRecord, Ray, SolidColor, Texture, Vec3,
 };
 
 use rand::prelude::*;
@@ -33,12 +33,17 @@ impl Clone for Box<dyn Material> {
 
 #[derive(Clone)]
 pub struct Lambertian {
-    albedo: Color,
+    albedo: Box<dyn Texture>,
 }
 
 impl Lambertian {
     pub fn new(albedo: Color) -> Lambertian {
-        Lambertian { albedo }
+        let texture = Box::new(SolidColor::new(albedo));
+        Lambertian { albedo: texture }
+    }
+
+    pub fn from_texture(texture: Box<dyn Texture>) -> Lambertian {
+        Lambertian { albedo: texture }
     }
 }
 
@@ -55,7 +60,7 @@ impl Material for Lambertian {
 
         Some(Scatter {
             ray: scattered_ray,
-            attenuation: self.albedo,
+            attenuation: self.albedo.value(hit_record.u, hit_record.v),
         })
     }
 }

@@ -21,7 +21,7 @@ impl Sphere {
         }
     }
 
-    fn get_sphere_uv(point: Point3) -> (f64, f64) {
+    pub fn get_sphere_uv(point: Point3) -> (f64, f64) {
         // p: a given point on the unit sphere, centered at hte origin
         // returns (u, v) with
         // u: value in [0, 1] for angle around y axis starting from x=-1
@@ -29,7 +29,7 @@ impl Sphere {
 
         let theta: f64 = (-point.y()).acos();
         let phi: f64 = (-point.z()).atan2(point.x()) + PI;
-        
+
         (phi / (2.0 * PI), theta / PI)
     }
 }
@@ -47,7 +47,8 @@ impl Hittable for Sphere {
 
         let hit_point = ray.at(solution);
         let outward_normal = (hit_point - self.center) / self.radius;
-        let record = HitRecord::new(ray, solution, outward_normal, self.material.clone());
+        let (u, v) = Sphere::get_sphere_uv(hit_point);
+        let record = HitRecord::new(ray, solution, u, v, outward_normal, self.material.clone());
 
         Some(record)
     }

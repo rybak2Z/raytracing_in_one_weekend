@@ -1,5 +1,6 @@
 use super::{
-    sphere::find_smallest_valid_solution, HitRecord, Hittable, Material, Point3, Ray, Vec3, AABB,
+    sphere::find_smallest_valid_solution, sphere::Sphere, HitRecord, Hittable, Material, Point3,
+    Ray, Vec3, AABB,
 };
 
 #[derive(Clone)]
@@ -50,7 +51,8 @@ impl Hittable for MovingSphere {
 
         let hit_point = ray.at(solution);
         let outward_normal = (hit_point - self.center(ray.time())) / self.radius;
-        let record = HitRecord::new(ray, solution, outward_normal, self.material.clone());
+        let (u, v) = Sphere::get_sphere_uv(hit_point);
+        let record = HitRecord::new(ray, solution, u, v, outward_normal, self.material.clone());
 
         Some(record)
     }
