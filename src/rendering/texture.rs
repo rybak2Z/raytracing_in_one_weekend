@@ -53,13 +53,20 @@ impl CheckerBoard {
     }
 
     pub fn from_colors(even: Color, odd: Color) -> CheckerBoard {
-        CheckerBoard { even: Box::new(SolidColor::new(even)), odd: Box::new(SolidColor::new(odd)) }
+        CheckerBoard {
+            even: Box::new(SolidColor::new(even)),
+            odd: Box::new(SolidColor::new(odd)),
+        }
     }
 }
 
 impl Texture for CheckerBoard {
     fn value(&self, u: f64, v: f64, hit_point: Point3) -> Color {
-        let sines = [hit_point.x(), hit_point.y(), hit_point.z()].map(|coord| (10.0 * coord).sin()).into_iter().reduce(|acc, e| acc * e).unwrap();
+        let sines = [hit_point.x(), hit_point.y(), hit_point.z()]
+            .map(|coord| (10.0 * coord).sin())
+            .into_iter()
+            .reduce(|acc, e| acc * e)
+            .unwrap();
         match sines < 0.0 {
             true => self.odd.value(u, v, hit_point),
             false => self.even.value(u, v, hit_point),

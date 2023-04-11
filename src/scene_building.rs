@@ -3,8 +3,8 @@ use crate::rendering::{
     hit_detection::HittableList,
     material::*,
     sphere::Sphere,
-    vec3::*,
     texture::*,
+    vec3::*,
 };
 
 use rand::prelude::*;
@@ -12,7 +12,10 @@ use rand::prelude::*;
 pub fn build_scene() -> (HittableList, Camera) {
     let mut world = HittableList::new();
 
-    let checker_texture = Box::new(CheckerBoard::from_colors(Color::new(0.42, 0.56, 0.56), Color::new(0.9, 0.9, 0.9)));
+    let checker_texture = Box::new(CheckerBoard::from_colors(
+        Color::new(0.42, 0.56, 0.56),
+        Color::new(0.9, 0.9, 0.9),
+    ));
     let ground_material = Box::new(Lambertian::from_texture(checker_texture));
     let ground_sphere = Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, ground_material);
     world.add(Box::new(ground_sphere));
