@@ -3,15 +3,15 @@ pub mod hit_detection;
 pub mod material;
 pub mod moving_sphere;
 pub mod sphere;
+pub mod texture;
 pub mod vec3;
 
 mod coordinate_iterator;
 mod ray;
-mod texture;
 
 pub use hit_detection::{BvhNode, HitRecord, Hittable, HittableList, AABB};
 pub use ray::Ray;
-pub use texture::{SolidColor, Texture};
+pub use texture::*;
 pub use vec3::{
     color::{self, Color},
     Point3, Vec3,
