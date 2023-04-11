@@ -3,6 +3,8 @@ use super::{
     Material, Point3, Ray, Vec3, AABB,
 };
 
+use std::f64::consts::PI;
+
 #[derive(Clone)]
 pub struct Sphere {
     center: Point3,
@@ -17,6 +19,18 @@ impl Sphere {
             radius,
             material,
         }
+    }
+
+    fn get_sphere_uv(point: Point3) -> (f64, f64) {
+        // p: a given point on the unit sphere, centered at hte origin
+        // returns (u, v) with
+        // u: value in [0, 1] for angle around y axis starting from x=-1
+        // v: vlaue in [0, 1] for angle from y=-1 to y=+1
+
+        let theta: f64 = (-point.y()).acos();
+        let phi: f64 = (-point.z()).atan2(point.x()) + PI;
+        
+        (phi / (2.0 * PI), theta / PI)
     }
 }
 
