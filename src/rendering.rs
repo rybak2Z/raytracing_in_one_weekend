@@ -7,6 +7,7 @@ pub mod vec3;
 
 mod coordinate_iterator;
 mod ray;
+mod texture;
 
 pub use hit_detection::{BvhNode, HitRecord, Hittable, HittableList, AABB};
 pub use ray::Ray;
