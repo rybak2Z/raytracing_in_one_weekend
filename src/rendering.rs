@@ -9,8 +9,11 @@ pub mod vec3;
 mod coordinate_iterator;
 mod ray;
 
-pub use hit_detection::{BvhNode, HitRecord, Hittable, HittableList, AABB};
+pub use hit_detection::{BvhNode, HitRecord, Hittable, HittableEnum, HittableList, AABB};
+pub use material::*;
+pub use moving_sphere::MovingSphere;
 pub use ray::Ray;
+pub use sphere::Sphere;
 pub use texture::*;
 pub use vec3::{
     color::{self, Color},
@@ -19,7 +22,6 @@ pub use vec3::{
 
 use camera::Camera;
 use coordinate_iterator::CoordinateIterator;
-use material::Material;
 
 use crate::config::*;
 use crate::writing::WritingSynchronizer;
@@ -34,13 +36,13 @@ use std::sync::{
 use std::thread::{self, JoinHandle};
 
 struct RenderingTools<'a> {
-    bvh: &'a BvhNode,
+    bvh: &'a HittableEnum,
     camera: &'a Camera,
     rng: ThreadRng,
 }
 
 impl RenderingTools<'_> {
-    pub fn new<'a>(bvh: &'a BvhNode, camera: &'a Camera) -> RenderingTools<'a> {
+    pub fn new<'a>(bvh: &'a HittableEnum, camera: &'a Camera) -> RenderingTools<'a> {
         RenderingTools {
             bvh,
             camera,
@@ -49,13 +51,13 @@ impl RenderingTools<'_> {
     }
 }
 
-pub fn render(bvh: BvhNode, camera: Camera) -> io::Result<()> {
+pub fn render(bvh: Arc<HittableEnum>, camera: Camera) -> io::Result<()> {
     let coordinate_iterator = Arc::new(Mutex::new(CoordinateIterator::new()));
     let (tx, rx) = mpsc::channel::<(Color, (u32, u32))>();
 
     let mut handles: Vec<JoinHandle<()>> = vec![];
     for _ in 0..(THREADS.get().unwrap() - 1) {
-        let bvh_copy = bvh.clone();
+        let bvh_copy = Arc::clone(&bvh);
         let camera_copy = camera.clone();
         let tx_copy = tx.clone();
         let shared_iterator = Arc::clone(&coordinate_iterator);
@@ -76,7 +78,7 @@ pub fn render(bvh: BvhNode, camera: Camera) -> io::Result<()> {
 }
 
 fn do_work(
-    bvh: BvhNode,
+    bvh: Arc<HittableEnum>,
     camera: Camera,
     shared_iterator: Arc<Mutex<CoordinateIterator>>,
     tx: Sender<(Color, (u32, u32))>,
@@ -90,7 +92,7 @@ fn do_work(
 }
 
 fn main_thread_work(
-    bvh: BvhNode,
+    bvh: Arc<HittableEnum>,
     camera: Camera,
     writing_sync: &mut WritingSynchronizer,
     shared_iterator: Arc<Mutex<CoordinateIterator>>,
@@ -178,7 +180,7 @@ fn get_uv(row: u32, col: u32, rng: &mut ThreadRng) -> (f64, f64) {
     (u, v)
 }
 
-fn get_ray_color(ray: &Ray, world: &BvhNode, depth: i32) -> Color {
+fn get_ray_color(ray: &Ray, world: &HittableEnum, depth: i32) -> Color {
     if depth == 0 {
         return Color::default();
     }

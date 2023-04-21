@@ -2,8 +2,10 @@ use super::validation::DEFINED_MATERIALS;
 use super::*;
 
 use crate::rendering::{
-    material::*, moving_sphere::MovingSphere, sphere::Sphere, Color, Hittable, Point3,
+    material::*, moving_sphere::MovingSphere, sphere::Sphere, Color, HittableEnum, Point3,
 };
+
+use std::sync::Arc;
 
 pub trait ToInternal {
     type Output;
@@ -12,7 +14,7 @@ pub trait ToInternal {
 }
 
 impl ToInternal for JsonMaterial {
-    type Output = Box<dyn Material>;
+    type Output = Arc<MaterialEnum>;
 
     fn to_internal(&self) -> Self::Output {
         match self {
@@ -23,19 +25,22 @@ impl ToInternal for JsonMaterial {
 }
 
 impl ToInternal for JsonMaterialLiteral {
-    type Output = Box<dyn Material>;
+    type Output = Arc<MaterialEnum>;
 
-    fn to_internal(&self) -> Box<dyn Material> {
+    fn to_internal(&self) -> Self::Output {
         match self.type_ {
             JsonMaterialOptions::Diffuse => {
-                Box::new(Lambertian::new(self.color.as_ref().unwrap().to_internal()))
+                Arc::new(Lambertian::new(self.color.as_ref().unwrap().to_internal()).into())
             }
-            JsonMaterialOptions::Metal => Box::new(Metal::new(
-                self.color.as_ref().unwrap().to_internal(),
-                self.fuzziness.unwrap(),
-            )),
+            JsonMaterialOptions::Metal => Arc::new(
+                Metal::new(
+                    self.color.as_ref().unwrap().to_internal(),
+                    self.fuzziness.unwrap(),
+                )
+                .into(),
+            ),
             JsonMaterialOptions::Dialectric => {
-                Box::new(Dialectric::new(self.refractive_index.unwrap()))
+                Arc::new(Dialectric::new(self.refractive_index.unwrap()).into())
             }
         }
     }
@@ -56,23 +61,26 @@ impl ToInternal for JsonColor {
 }
 
 impl ToInternal for JsonSphere {
-    type Output = Box<dyn Hittable>;
+    type Output = Arc<HittableEnum>;
 
-    fn to_internal(&self) -> Box<dyn Hittable> {
+    fn to_internal(&self) -> Self::Output {
         let (x, y, z) = (self.coordinates.0, self.coordinates.1, self.coordinates.2);
         let point = Point3::new(x, y, z);
         if let Some(mov) = &self.movement {
             let target_point = Point3::new(mov.target.0, mov.target.1, mov.target.2);
-            Box::new(MovingSphere::new(
-                point,
-                target_point,
-                mov.start_time,
-                mov.end_time,
-                self.radius,
-                self.material.to_internal(),
-            ))
+            Arc::new(
+                MovingSphere::new(
+                    point,
+                    target_point,
+                    mov.start_time,
+                    mov.end_time,
+                    self.radius,
+                    self.material.to_internal(),
+                )
+                .into(),
+            )
         } else {
-            Box::new(Sphere::new(point, self.radius, self.material.to_internal()))
+            Arc::new(Sphere::new(point, self.radius, self.material.to_internal()).into())
         }
     }
 }

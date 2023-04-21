@@ -1,16 +1,17 @@
 use super::{
-    sphere::find_smallest_valid_solution, sphere::Sphere, HitRecord, Hittable, Material, Point3,
-    Ray, Vec3, AABB,
+    sphere::find_smallest_valid_solution, sphere::Sphere, HitRecord, Hittable, MaterialEnum,
+    Point3, Ray, Vec3, AABB,
 };
 
-#[derive(Clone)]
+use std::sync::Arc;
+
 pub struct MovingSphere {
     center0: Point3,
     center1: Point3,
     time0: f64,
     time1: f64,
     radius: f64,
-    material: Box<dyn Material>,
+    material: Arc<MaterialEnum>,
 }
 
 impl MovingSphere {
@@ -20,7 +21,7 @@ impl MovingSphere {
         time0: f64,
         time1: f64,
         radius: f64,
-        material: Box<dyn Material>,
+        material: Arc<MaterialEnum>,
     ) -> MovingSphere {
         MovingSphere {
             center0,

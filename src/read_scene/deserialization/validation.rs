@@ -11,8 +11,9 @@ use once_cell::sync::Lazy;
 
 use std::collections::HashMap;
 use std::io;
+use std::sync::Arc;
 
-pub static mut DEFINED_MATERIALS: Lazy<HashMap<String, Box<dyn Material>>> =
+pub static mut DEFINED_MATERIALS: Lazy<HashMap<String, Arc<MaterialEnum>>> =
     Lazy::new(HashMap::default);
 
 pub trait Validate {

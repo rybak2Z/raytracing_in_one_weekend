@@ -1,19 +1,19 @@
 use super::{
     hit_detection::{HitRecord, Hittable},
-    Material, Point3, Ray, Vec3, AABB,
+    MaterialEnum, Point3, Ray, Vec3, AABB,
 };
 
 use std::f64::consts::PI;
+use std::sync::Arc;
 
-#[derive(Clone)]
 pub struct Sphere {
     center: Point3,
     radius: f64,
-    material: Box<dyn Material>,
+    material: Arc<MaterialEnum>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, material: Box<dyn Material>) -> Sphere {
+    pub fn new(center: Point3, radius: f64, material: Arc<MaterialEnum>) -> Sphere {
         Sphere {
             center,
             radius,
