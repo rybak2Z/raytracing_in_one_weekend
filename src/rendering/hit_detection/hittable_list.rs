@@ -1,10 +1,11 @@
-use super::{HitRecord, Hittable, AABB};
+use super::{HitRecord, Hittable, HittableEnum, AABB};
 
 use crate::rendering::Ray;
 
-#[derive(Clone)]
+use std::sync::Arc;
+
 pub struct HittableList {
-    pub objects: Vec<Box<dyn Hittable>>,
+    pub objects: Vec<Arc<HittableEnum>>,
 }
 
 impl HittableList {
@@ -12,7 +13,7 @@ impl HittableList {
         HittableList { objects: vec![] }
     }
 
-    pub fn add(&mut self, object: Box<dyn Hittable>) {
+    pub fn add(&mut self, object: Arc<HittableEnum>) {
         self.objects.push(object);
     }
 }

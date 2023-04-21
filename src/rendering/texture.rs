@@ -1,26 +1,20 @@
 use super::{Color, Point3};
 
-pub trait Texture: CloneTexture + Send + Sync {
+use enum_dispatch::enum_dispatch;
+
+use std::sync::Arc;
+
+#[enum_dispatch]
+pub enum TextureEnum {
+    SolidColor,
+    CheckerBoard,
+}
+
+#[enum_dispatch(TextureEnum)]
+pub trait Texture {
     fn value(&self, u: f64, v: f64, hit_point: Point3) -> Color;
 }
 
-pub trait CloneTexture {
-    fn clone_texture(&self) -> Box<dyn Texture>;
-}
-
-impl<T: Texture + Clone + 'static> CloneTexture for T {
-    fn clone_texture(&self) -> Box<dyn Texture> {
-        Box::new(self.clone())
-    }
-}
-
-impl Clone for Box<dyn Texture> {
-    fn clone(&self) -> Self {
-        self.clone_texture()
-    }
-}
-
-#[derive(Clone)]
 pub struct SolidColor {
     color: Color,
 }
@@ -41,21 +35,20 @@ impl Texture for SolidColor {
     }
 }
 
-#[derive(Clone)]
 pub struct CheckerBoard {
-    even: Box<dyn Texture>,
-    odd: Box<dyn Texture>,
+    even: Arc<TextureEnum>,
+    odd: Arc<TextureEnum>,
 }
 
 impl CheckerBoard {
-    pub fn new(even: Box<dyn Texture>, odd: Box<dyn Texture>) -> CheckerBoard {
+    pub fn new(even: Arc<TextureEnum>, odd: Arc<TextureEnum>) -> CheckerBoard {
         CheckerBoard { even, odd }
     }
 
     pub fn from_colors(even: Color, odd: Color) -> CheckerBoard {
         CheckerBoard {
-            even: Box::new(SolidColor::new(even)),
-            odd: Box::new(SolidColor::new(odd)),
+            even: Arc::new(SolidColor::new(even).into()),
+            odd: Arc::new(SolidColor::new(odd).into()),
         }
     }
 }

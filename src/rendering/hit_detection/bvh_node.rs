@@ -1,33 +1,33 @@
 #![allow(clippy::needless_borrow)]
-#![allow(clippy::borrowed_box)]
+#![allow(clippy::new_ret_no_self)]
 
-use super::{HitRecord, Hittable, HittableList, Ray, AABB};
+use super::{HitRecord, Hittable, HittableEnum, HittableList, Ray, AABB};
 
 use rand::{thread_rng, Rng};
 
 use std::cmp::Ordering;
+use std::sync::Arc;
 
-type Comparator = fn(&Box<dyn Hittable>, &Box<dyn Hittable>) -> Ordering;
+type Comparator = fn(&Arc<HittableEnum>, &Arc<HittableEnum>) -> Ordering;
 
-#[derive(Clone)]
 pub struct BvhNode {
-    left: Box<dyn Hittable>,
-    right: Box<dyn Hittable>,
+    left: Arc<HittableEnum>,
+    right: Arc<HittableEnum>,
     bbox: AABB,
 }
 
 impl BvhNode {
-    pub fn new(list: &HittableList, time0: f64, time1: f64) -> BvhNode {
-        Self::construct_tree(&list.objects, 0, list.objects.len(), time0, time1)
+    pub fn new(list: &HittableList, time0: f64, time1: f64) -> Arc<HittableEnum> {
+        Self::construct_tree(&list.objects[..], 0, list.objects.len(), time0, time1)
     }
 
     fn construct_tree(
-        src_objects: &[Box<dyn Hittable>],
+        src_objects: &[Arc<HittableEnum>],
         from_obj: usize,
         up_to_obj: usize,
         time0: f64,
         time1: f64,
-    ) -> BvhNode {
+    ) -> Arc<HittableEnum> {
         let objects = &mut src_objects.to_owned()[from_obj..up_to_obj];
         let comparator = get_random_axis_comparator();
 
@@ -38,7 +38,7 @@ impl BvhNode {
         };
 
         let bbox = get_surrounding_box(&left, &right, time0, time1);
-        BvhNode { left, right, bbox }
+        Arc::new(BvhNode { left, right, bbox }.into())
     }
 }
 
@@ -82,9 +82,9 @@ fn get_random_axis_comparator() -> Comparator {
 }
 
 fn order_two(
-    objects: &[Box<dyn Hittable>],
+    objects: &[Arc<HittableEnum>],
     comparator: Comparator,
-) -> (Box<dyn Hittable>, Box<dyn Hittable>) {
+) -> (Arc<HittableEnum>, Arc<HittableEnum>) {
     let first = &objects[0];
     let second = &objects[1];
     match comparator(first, second) {
@@ -94,28 +94,22 @@ fn order_two(
 }
 
 fn construct_sub_trees(
-    objects: &mut [Box<dyn Hittable>],
+    objects: &mut [Arc<HittableEnum>],
     comparator: Comparator,
     time0: f64,
     time1: f64,
-) -> (Box<dyn Hittable>, Box<dyn Hittable>) {
+) -> (Arc<HittableEnum>, Arc<HittableEnum>) {
     objects.sort_by(comparator);
     let mid = objects.len() / 2;
-    let left = Box::new(BvhNode::construct_tree(&objects, 0, mid, time0, time1));
-    let right = Box::new(BvhNode::construct_tree(
-        &objects,
-        mid,
-        objects.len(),
-        time0,
-        time1,
-    ));
+    let left = BvhNode::construct_tree(&objects, 0, mid, time0, time1);
+    let right = BvhNode::construct_tree(&objects, mid, objects.len(), time0, time1);
 
     (left, right)
 }
 
 fn get_surrounding_box(
-    left: &Box<dyn Hittable>,
-    right: &Box<dyn Hittable>,
+    left: &Arc<HittableEnum>,
+    right: &Arc<HittableEnum>,
     time0: f64,
     time1: f64,
 ) -> AABB {
@@ -129,8 +123,8 @@ fn get_surrounding_box(
 }
 
 fn compare_boxes(
-    object_a: &Box<dyn Hittable>,
-    object_b: &Box<dyn Hittable>,
+    object_a: &Arc<HittableEnum>,
+    object_b: &Arc<HittableEnum>,
     axis: usize,
 ) -> Ordering {
     let box_a = object_a.bounding_box(0.0, 0.0);
@@ -143,14 +137,14 @@ fn compare_boxes(
     (box_a.unwrap().min().get(axis)).total_cmp(&box_b.unwrap().min().get(axis))
 }
 
-fn compare_box_x(object_a: &Box<dyn Hittable>, object_b: &Box<dyn Hittable>) -> Ordering {
+fn compare_box_x(object_a: &Arc<HittableEnum>, object_b: &Arc<HittableEnum>) -> Ordering {
     compare_boxes(object_a, object_b, 0)
 }
 
-fn compare_box_y(object_a: &Box<dyn Hittable>, object_b: &Box<dyn Hittable>) -> Ordering {
+fn compare_box_y(object_a: &Arc<HittableEnum>, object_b: &Arc<HittableEnum>) -> Ordering {
     compare_boxes(object_a, object_b, 1)
 }
 
-fn compare_box_z(object_a: &Box<dyn Hittable>, object_b: &Box<dyn Hittable>) -> Ordering {
+fn compare_box_z(object_a: &Arc<HittableEnum>, object_b: &Arc<HittableEnum>) -> Ordering {
     compare_boxes(object_a, object_b, 2)
 }
