@@ -1,5 +1,7 @@
 mod perlin_noise;
 
+use perlin_noise::PerlinNoise;
+
 use super::{Color, Point3};
 
 use enum_dispatch::enum_dispatch;
@@ -10,6 +12,7 @@ use std::sync::Arc;
 pub enum TextureEnum {
     SolidColor,
     CheckerBoard,
+    NoiseTexture,
 }
 
 #[enum_dispatch(TextureEnum)]
@@ -66,5 +69,29 @@ impl Texture for CheckerBoard {
             true => self.odd.value(u, v, hit_point),
             false => self.even.value(u, v, hit_point),
         }
+    }
+}
+
+pub struct NoiseTexture {
+    noise: PerlinNoise,
+}
+
+impl NoiseTexture {
+    pub fn new() -> NoiseTexture {
+        NoiseTexture {
+            noise: PerlinNoise::default(),
+        }
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, _u: f64, _v: f64, hit_point: Point3) -> Color {
+        Color::new(1.0, 1.0, 1.0) * self.noise.noise(hit_point)
+    }
+}
+
+impl Default for NoiseTexture {
+    fn default() -> Self {
+        Self::new()
     }
 }
