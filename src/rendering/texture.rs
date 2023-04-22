@@ -1,3 +1,5 @@
+mod perlin_noise;
+
 use super::{Color, Point3};
 
 use enum_dispatch::enum_dispatch;
