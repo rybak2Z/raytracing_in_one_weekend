@@ -11,7 +11,7 @@ pub type WriterErr<'a> = BufWriter<StderrLock<'a>>;
 pub const FILE_TYPE: &str = "P3";
 pub const MAX_COLOR: u32 = 255;
 
-const TIME_LEFT_UPDATE_FREQUENCY: f64 = 1.0;  // in seconds
+const TIME_LEFT_UPDATE_FREQUENCY: f64 = 1.0; // in seconds
 
 pub struct WritingSynchronizer<'a> {
     buffer: Vec<(Color, u32)>,
@@ -77,11 +77,14 @@ impl WritingSynchronizer<'_> {
         self.pixels_written += 1;
         if self.update_counter % self.update_every == 0 {
             let pixels_total = *PIXELS_TOTAL.get().unwrap();
-            let relative_progress =
-                self.pixels_written as f64 / pixels_total as f64;
+            let relative_progress = self.pixels_written as f64 / pixels_total as f64;
             self.update_remaining_time_estimation(pixels_total);
 
-            write_progress_update(relative_progress, &self.time_remaining_formatted, &mut self.writer_err)?;
+            write_progress_update(
+                relative_progress,
+                &self.time_remaining_formatted,
+                &mut self.writer_err,
+            )?;
             self.update_counter = 0;
         }
 
@@ -92,7 +95,7 @@ impl WritingSynchronizer<'_> {
         let delta_t = Instant::now() - self.last_write;
         if delta_t.as_secs_f64() > TIME_LEFT_UPDATE_FREQUENCY {
             self.time_passed += delta_t;
-            
+
             let seconds_per_pixel = self.time_passed / self.pixels_written;
             let pixels_left = pixels_total - self.pixels_written;
             let time_left = seconds_per_pixel * pixels_left;
@@ -143,7 +146,11 @@ pub fn write_meta_data() -> io::Result<()> {
     )
 }
 
-pub fn write_progress_update(relative_progress: f64, time_left: &str, writer_err: &mut WriterErr) -> io::Result<()> {
+pub fn write_progress_update(
+    relative_progress: f64,
+    time_left: &str,
+    writer_err: &mut WriterErr,
+) -> io::Result<()> {
     write!(
         writer_err,
         "\rRendering... {:.2} % (time remaining: {})",
