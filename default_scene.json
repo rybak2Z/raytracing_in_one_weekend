@@ -91,7 +91,7 @@
             }
         }, {
             "name": "moving_ball",
-            "coordinates": [5, 0.7, 0],
+            "coordinates": [5, 0.7, 2],
             "radius": 0.7,
             "movement": {
                 "target": [6, 0.7, 3]
