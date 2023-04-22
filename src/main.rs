@@ -24,8 +24,8 @@ fn main() -> io::Result<()> {
     };
     let bvh = BvhNode::new(&world, camera.get_start_time(), camera.get_end_time());
 
-    render(bvh, camera)?;
-    eprintln!("\nDone.");
+    let time_taken = render(bvh, camera)?;
+    eprintln!("\nDone. (time taken: {time_taken})");
 
     Ok(())
 }

@@ -51,7 +51,7 @@ impl RenderingTools<'_> {
     }
 }
 
-pub fn render(bvh: Arc<HittableEnum>, camera: Camera) -> io::Result<()> {
+pub fn render(bvh: Arc<HittableEnum>, camera: Camera) -> io::Result<String> {
     let coordinate_iterator = Arc::new(Mutex::new(CoordinateIterator::new()));
     let (tx, rx) = mpsc::channel::<(Color, (u32, u32))>();
 
@@ -72,9 +72,9 @@ pub fn render(bvh: Arc<HittableEnum>, camera: Camera) -> io::Result<()> {
     let mut writing_sync = WritingSynchronizer::new();
     main_thread_work(bvh, camera, &mut writing_sync, coordinate_iterator, &rx)?;
 
-    finish(handles, writing_sync, rx, tx)?;
+    finish(handles, &mut writing_sync, rx, tx)?;
 
-    Ok(())
+    Ok(writing_sync.total_time_taken())
 }
 
 fn do_work(
@@ -130,7 +130,7 @@ fn get_next_coordinates(shared_iterator: &Arc<Mutex<CoordinateIterator>>) -> Opt
 
 fn finish(
     handles: Vec<JoinHandle<()>>,
-    mut writing_sync: WritingSynchronizer,
+    writing_sync: &mut WritingSynchronizer,
     rx: Receiver<(Color, (u32, u32))>,
     tx: Sender<(Color, (u32, u32))>,
 ) -> io::Result<()> {
