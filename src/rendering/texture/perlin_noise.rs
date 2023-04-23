@@ -36,6 +36,10 @@ impl PerlinNoise {
         let v = point.y() - point.y().floor();
         let w = point.z() - point.z().floor();
 
+        let u = u * u * (3.0 - 2.0 * u);
+        let v = v * v * (3.0 - 2.0 * v);
+        let w = w * w * (3.0 - 2.0 * w);
+
         let i = point.x().floor() as isize;
         let j = point.y().floor() as isize;
         let k = point.z().floor() as isize;
