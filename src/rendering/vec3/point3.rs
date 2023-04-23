@@ -33,11 +33,6 @@ impl Point3 {
         self.x().abs() < s && self.y().abs() < s && self.z().abs() < s
     }
 
-    pub fn pos_vec(&self) -> Vec3 {
-        // position vector
-        Vec3::new(self.x(), self.y(), self.z())
-    }
-
     pub fn random() -> Point3 {
         let random_vec = Vec3::random();
         Point3::new(random_vec.x(), random_vec.y(), random_vec.z())
@@ -61,6 +56,12 @@ impl Point3 {
     pub fn random_in_unit_disk() -> Point3 {
         let random_vec = Vec3::random_in_unit_disk();
         Point3::new(random_vec.x(), random_vec.y(), random_vec.z())
+    }
+}
+
+impl From<Vec3> for Point3 {
+    fn from(value: Vec3) -> Self {
+        Self::new(value.x(), value.y(), value.z())
     }
 }
 

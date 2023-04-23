@@ -123,6 +123,12 @@ impl Vec3 {
     }
 }
 
+impl From<Point3> for Vec3 {
+    fn from(value: Point3) -> Self {
+        Self::new(value.x(), value.y(), value.z())
+    }
+}
+
 impl ops::Add for Vec3 {
     type Output = Self;
 
