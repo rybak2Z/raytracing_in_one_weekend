@@ -50,7 +50,7 @@ impl PerlinNoise {
             }
         }
 
-        Self::perlin_interpolate(c, u, v, w)
+        0.5 * (1.0 + Self::perlin_interpolate(c, u, v, w))  // "0.5 * (1.0 + ...)" for normalization
     }
 
     pub fn turbulence(&self, point: Point3, depth: u32) -> f64 {
