@@ -45,14 +45,13 @@ impl PerlinNoise {
         let k = point.z().floor() as isize;
         let mut c = [[[0.0; 2]; 2]; 2];
 
-        for di in 0..2 {
-            for dj in 0..2 {
-                for dk in 0..2 {
-                    c[di][dj][dk] = self.random_floats[
-                        self.perm_x[((i + di as isize) & 255) as usize] ^
-                        self.perm_y[((j + dj as isize) & 255) as usize] ^
-                        self.perm_z[((k + dk as isize) & 255) as usize]
-                    ];
+        for (di, c1) in c.iter_mut().enumerate() {
+            for (dj, c2) in c1.iter_mut().enumerate() {
+                for (dk, element) in c2.iter_mut().enumerate() {
+                    *element = self.random_floats[
+                        self.perm_x[((i + di as isize) & 255) as usize]
+                        ^ self.perm_y[((j + dj as isize) & 255) as usize]
+                        ^ self.perm_z[((k + dk as isize) & 255) as usize]];
                 }
             }
         }
@@ -90,11 +89,10 @@ fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
         for j in 0..2 {
             for k in 0..2 {
                 let (i, j, k) = (i as f64, j as f64, k as f64);
-                accumulated += 
-                (i * u + (1.0 - i) * (1.0 - u)) * 
-                (j * v + (1.0 - j) * (1.0 - v)) * 
-                (k * w + (1.0 - k) * (1.0 - w)) * 
-                c[i as usize][j as usize][k as usize];
+                accumulated += (i * u + (1.0 - i) * (1.0 - u))
+                    * (j * v + (1.0 - j) * (1.0 - v))
+                    * (k * w + (1.0 - k) * (1.0 - w))
+                    * c[i as usize][j as usize][k as usize];
             }
         }
     }
