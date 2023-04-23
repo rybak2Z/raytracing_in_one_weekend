@@ -2,7 +2,7 @@ mod perlin_noise;
 
 use perlin_noise::PerlinNoise;
 
-use super::{Color, Point3};
+use super::{Color, Point3, Vec3};
 
 use enum_dispatch::enum_dispatch;
 
@@ -74,24 +74,27 @@ impl Texture for CheckerBoard {
 
 pub struct NoiseTexture {
     noise: PerlinNoise,
+    scale: f64,
 }
 
 impl NoiseTexture {
-    pub fn new() -> NoiseTexture {
+    pub fn new(scale: f64) -> NoiseTexture {
         NoiseTexture {
             noise: PerlinNoise::default(),
+            scale,
         }
     }
 }
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, hit_point: Point3) -> Color {
-        Color::new(1.0, 1.0, 1.0) * self.noise.noise(hit_point)
+        let scaled_point = Point3::from(self.scale * Vec3::from(hit_point));
+        Color::new(1.0, 1.0, 1.0) * self.noise.noise(scaled_point)
     }
 }
 
 impl Default for NoiseTexture {
     fn default() -> Self {
-        Self::new()
+        Self::new(1.0)
     }
 }
