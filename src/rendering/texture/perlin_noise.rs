@@ -32,11 +32,28 @@ impl PerlinNoise {
     }
 
     pub fn noise(&self, point: Point3) -> f64 {
-        let i = ((4.0 * point.x()) as i32 & 255) as usize;
-        let j = ((4.0 * point.y()) as i32 & 255) as usize;
-        let k = ((4.0 * point.z()) as i32 & 255) as usize;
+        let u = point.x() - point.x().floor();
+        let v = point.y() - point.y().floor();
+        let w = point.z() - point.z().floor();
 
-        self.random_floats[self.perm_x[i] ^ self.perm_y[j] ^ self.perm_z[k]]
+        let i = point.x().floor() as isize;
+        let j = point.y().floor() as isize;
+        let k = point.z().floor() as isize;
+        let mut c = [[[0.0; 2]; 2]; 2];
+
+        for di in 0..2 {
+            for dj in 0..2 {
+                for dk in 0..2 {
+                    c[di][dj][dk] = self.random_floats[
+                        self.perm_x[((i + di as isize) & 255) as usize] ^
+                        self.perm_y[((j + dj as isize) & 255) as usize] ^
+                        self.perm_z[((k + dk as isize) & 255) as usize]
+                    ];
+                }
+            }
+        }
+
+        trilinear_interp(c, u, v, w)
     }
 
     fn perlin_generate_perm() -> [usize; POINT_COUNT] {
@@ -61,4 +78,22 @@ impl Default for PerlinNoise {
     fn default() -> Self {
         Self::new()
     }
+}
+
+fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+    let mut accumulated = 0.0;
+    for i in 0..2 {
+        for j in 0..2 {
+            for k in 0..2 {
+                let (i, j, k) = (i as f64, j as f64, k as f64);
+                accumulated += 
+                (i * u + (1.0 - i) * (1.0 - u)) * 
+                (j * v + (1.0 - j) * (1.0 - v)) * 
+                (k * w + (1.0 - k) * (1.0 - w)) * 
+                c[i as usize][j as usize][k as usize];
+            }
+        }
+    }
+
+    accumulated
 }
