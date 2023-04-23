@@ -4,30 +4,28 @@ use rand::prelude::*;
 
 const POINT_COUNT: usize = 256;
 
+// Uses pointers to keep it at roughly same size scale as the other TextureEnum values
+// Makes use of Boxes because normal references would cause annoying lifetime problems
 pub struct PerlinNoise {
-    random_floats: [f64; POINT_COUNT],
-    perm_x: [usize; POINT_COUNT],
-    perm_y: [usize; POINT_COUNT],
-    perm_z: [usize; POINT_COUNT],
+    random_floats: Box<[f64; POINT_COUNT]>,
+    perm_x: Box<[usize; POINT_COUNT]>,
+    perm_y: Box<[usize; POINT_COUNT]>,
+    perm_z: Box<[usize; POINT_COUNT]>,
 }
 
 impl PerlinNoise {
     pub fn new() -> PerlinNoise {
-        let mut random_floats: [f64; 256] = [0.0; POINT_COUNT];
+        let mut random_floats = [0.0; POINT_COUNT];
         let mut rng = thread_rng();
         for element in random_floats.iter_mut() {
             *element = rng.gen();
         }
 
-        let perm_x = Self::perlin_generate_perm();
-        let perm_y = Self::perlin_generate_perm();
-        let perm_z = Self::perlin_generate_perm();
-
         PerlinNoise {
-            random_floats,
-            perm_x,
-            perm_y,
-            perm_z,
+            random_floats: Box::new(random_floats),
+            perm_x: Box::new(Self::perlin_generate_perm()),
+            perm_y: Box::new(Self::perlin_generate_perm()),
+            perm_z: Box::new(Self::perlin_generate_perm()),
         }
     }
 
