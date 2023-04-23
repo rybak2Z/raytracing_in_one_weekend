@@ -13,6 +13,7 @@ pub enum TextureEnum {
     SolidColor,
     CheckerBoard,
     NoiseTexture,
+    Marble,
 }
 
 #[enum_dispatch(TextureEnum)]
@@ -98,5 +99,33 @@ impl Texture for NoiseTexture {
 impl Default for NoiseTexture {
     fn default() -> Self {
         Self::new(1.0, 1)
+    }
+}
+
+pub struct Marble {
+    noise: PerlinNoise,
+    scale: f64,
+}
+
+impl Marble {
+    pub fn new(scale: f64) -> Marble {
+        Marble {
+            noise: PerlinNoise::default(),
+            scale,
+        }
+    }
+}
+
+impl Texture for Marble {
+    fn value(&self, _u: f64, _v: f64, hit_point: Point3) -> Color {
+        let noise = f64::sin(self.scale * hit_point.z() + 10.0 * self.noise.turbulence(hit_point, 7));
+        let normalized_noise = 0.5 * (1.0 + noise);
+        Color::new(1.0, 1.0, 1.0) * normalized_noise
+    }
+}
+
+impl Default for Marble {
+    fn default() -> Self {
+        Self::new(1.0)
     }
 }
