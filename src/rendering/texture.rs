@@ -89,7 +89,8 @@ impl NoiseTexture {
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, hit_point: Point3) -> Color {
         let scaled_point = Point3::from(self.scale * Vec3::from(hit_point));
-        Color::new(1.0, 1.0, 1.0) * self.noise.noise(scaled_point)
+        let normalized_noise = 0.5 * (1.0 + self.noise.noise(scaled_point));
+        Color::new(1.0, 1.0, 1.0) * normalized_noise
     }
 }
 
