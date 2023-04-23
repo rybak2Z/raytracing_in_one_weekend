@@ -53,6 +53,20 @@ impl PerlinNoise {
         Self::perlin_interpolate(c, u, v, w)
     }
 
+    pub fn turbulence(&self, point: Point3, depth: u32) -> f64 {
+        let mut accumulated = 0.0;
+        let mut temp_point = point;
+        let mut weight = 1.0;
+
+        for _ in 0..depth {
+            accumulated += weight * self.noise(temp_point);
+            weight *= 0.5;
+            temp_point = Point3::from(2.0 * Vec3::from(temp_point));
+        }
+
+        accumulated.abs()
+    }
+
     fn perlin_interpolate(c: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
         let u = u * u * (3.0 - 2.0 * u);
         let v = v * v * (3.0 - 2.0 * v);

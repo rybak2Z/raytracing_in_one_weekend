@@ -74,13 +74,15 @@ impl Texture for CheckerBoard {
 
 pub struct NoiseTexture {
     noise: PerlinNoise,
+    turbulence: u32,
     scale: f64,
 }
 
 impl NoiseTexture {
-    pub fn new(scale: f64) -> NoiseTexture {
+    pub fn new(scale: f64, turbulence: u32) -> NoiseTexture {
         NoiseTexture {
             noise: PerlinNoise::default(),
+            turbulence,
             scale,
         }
     }
@@ -89,13 +91,12 @@ impl NoiseTexture {
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, hit_point: Point3) -> Color {
         let scaled_point = Point3::from(self.scale * Vec3::from(hit_point));
-        let normalized_noise = 0.5 * (1.0 + self.noise.noise(scaled_point));
-        Color::new(1.0, 1.0, 1.0) * normalized_noise
+        Color::new(1.0, 1.0, 1.0) * self.noise.turbulence(scaled_point, self.turbulence)
     }
 }
 
 impl Default for NoiseTexture {
     fn default() -> Self {
-        Self::new(1.0)
+        Self::new(1.0, 1)
     }
 }
