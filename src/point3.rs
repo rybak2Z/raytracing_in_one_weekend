@@ -2,7 +2,7 @@
 
 use crate::vec3::Vec3;
 
-use std::ops::Sub;
+use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point3 {
@@ -24,20 +24,6 @@ impl Point3 {
         }
     }
 
-    pub fn translate(&mut self, translation: Vec3) {
-        self.x += translation.x;
-        self.y += translation.y;
-        self.z += translation.z;
-    }
-
-    pub fn translated(self, translation: Vec3) -> Point3 {
-        Point3::new(
-            self.x + translation.x,
-            self.y + translation.y,
-            self.z + translation.z,
-        )
-    }
-
     pub fn distance(self, other: Point3) -> f32 {
         (self - other).length()
     }
@@ -47,10 +33,40 @@ impl Point3 {
     }
 }
 
+impl Add<Vec3> for Point3 {
+    type Output = Self;
+
+    fn add(self, rhs: Vec3) -> Self::Output {
+        Point3::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
+    }
+}
+
+impl AddAssign<Vec3> for Point3 {
+    fn add_assign(&mut self, rhs: Vec3) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+        self.z += rhs.z;
+    }
+}
+
 impl Sub for Point3 {
     type Output = Vec3;
 
     fn sub(self, rhs: Self) -> Self::Output {
         Vec3::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
+    }
+}
+
+impl Sub<Vec3> for Point3 {
+    type Output = Self;
+
+    fn sub(self, rhs: Vec3) -> Self::Output {
+        self + (-rhs)
+    }
+}
+
+impl SubAssign<Vec3> for Point3 {
+    fn sub_assign(&mut self, rhs: Vec3) {
+        *self += -rhs;
     }
 }
