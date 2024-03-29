@@ -1,0 +1,5 @@
+# Out of the following three fields, exactly two have to be defined, i.e. you 
+# should set two fields and comment out or remove the third one.
+image_width = 256
+image_height = 256
+# aspect_ratio = [ 16, 9 ]  # [ width, height ]
