@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::MAX_VALUE;
+use crate::config::MAX_VALUE;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Color {

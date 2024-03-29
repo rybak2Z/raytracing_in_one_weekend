@@ -1,22 +1,29 @@
-use raytracing_in_one_weekend::{color::Color, FILE_TYPE, IMAGE_HEIGHT, IMAGE_WIDTH, MAX_VALUE};
+use raytracing_in_one_weekend::color::Color;
+use raytracing_in_one_weekend::config::{self, *};
 
 use std::io::{self, BufWriter, Write};
 use std::time::Instant;
 
-fn main() -> io::Result<()> {
+fn main() -> anyhow::Result<()> {
+    config::initialize()?;
+
     let mut stdout = BufWriter::new(io::stdout());
     write!(
         stdout,
-        "{FILE_TYPE}\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n{MAX_VALUE}\n"
+        "{}\n{} {}\n{}\n",
+        FILE_TYPE,
+        image_width(),
+        image_height(),
+        MAX_VALUE,
     )?;
 
     let time_start = Instant::now();
 
-    for row in 0..IMAGE_HEIGHT {
-        for col in 0..IMAGE_WIDTH {
+    for row in 0..image_height() {
+        for col in 0..image_width() {
             let color = Color::new(
-                col as f32 / (IMAGE_WIDTH - 1) as f32,
-                row as f32 / (IMAGE_HEIGHT - 1) as f32,
+                col as f32 / (image_width() - 1) as f32,
+                row as f32 / (image_height() - 1) as f32,
                 0.0,
             );
 
@@ -33,8 +40,8 @@ fn main() -> io::Result<()> {
 }
 
 fn print_progress(row: u32) {
-    let progress = row as f32 / (IMAGE_HEIGHT - 1) as f32;
-    let lines_remaining = IMAGE_HEIGHT - (row + 1);
+    let progress = row as f32 / (image_height() - 1) as f32;
+    let lines_remaining = image_height() - (row + 1);
     let cleaning = "     "; // Needed if the current output line is shorter than the line that gets overwritten
     eprint!(
         "\rProgress: {:.2} % (scanlines remaining: {}){}",
