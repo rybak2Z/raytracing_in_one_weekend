@@ -10,15 +10,15 @@ impl Ray {
         Ray { origin, direction }
     }
 
-    pub fn origin(self) -> Point3 {
+    pub fn origin(&self) -> Point3 {
         self.origin
     }
 
-    pub fn direction(self) -> Vec3 {
+    pub fn direction(&self) -> Vec3 {
         self.direction
     }
 
-    pub fn at(self, t: f32) -> Point3 {
+    pub fn at(&self, t: f32) -> Point3 {
         self.origin + t * self.direction
     }
 }
