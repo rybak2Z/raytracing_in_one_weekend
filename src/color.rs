@@ -2,7 +2,7 @@
 
 use crate::MAX_VALUE;
 
-use std::ops::{Add, Div, DivAssign, Mul, MulAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Color {
@@ -20,13 +20,28 @@ impl Color {
         }
     }
 
-    pub fn pixel_format(self) -> String {
-        let factor = MAX_VALUE as f32 + 0.999;
+    pub fn pixel_format(self, samples: u32) -> String {
+        let Color {
+            mut r,
+            mut g,
+            mut b,
+        } = self;
+        let downscale = 1.0 / samples as f32;
+        r *= downscale;
+        g *= downscale;
+        b *= downscale;
+
+        // The +1 makes it so the interval of numbers that would be scaled to
+        // MAX_VALUE is the same size as the intervals for all other values.
+        // Without this, a color could only be scaled up to MAX_VALUE when it
+        // is exactly 1.0. To avoid writing values above MAX_VALUE, the
+        // scaled up colors get clamped below.
+        let upscale = (MAX_VALUE + 1) as f32;
         format!(
             "{} {} {}\n",
-            (self.r * factor) as u32,
-            (self.g * factor) as u32,
-            (self.b * factor) as u32,
+            ((r * upscale) as u32).clamp(0, MAX_VALUE),
+            ((g * upscale) as u32).clamp(0, MAX_VALUE),
+            ((b * upscale) as u32).clamp(0, MAX_VALUE),
         )
     }
 }
@@ -36,6 +51,12 @@ impl Add for Color {
 
     fn add(self, rhs: Self) -> Self::Output {
         Color::new(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b)
+    }
+}
+
+impl AddAssign for Color {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
     }
 }
 

@@ -4,6 +4,7 @@ pub mod hittable;
 pub mod hittable_list;
 pub mod interval;
 pub mod point3;
+pub mod random;
 pub mod ray;
 pub mod sphere;
 pub mod vec3;
