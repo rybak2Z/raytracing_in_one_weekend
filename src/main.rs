@@ -64,8 +64,13 @@ fn main() -> io::Result<()> {
 }
 
 fn ray_color(ray: &Ray) -> Color {
-    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Color::new(1.0, 0.0, 0.0);
+    let sphere_center = Point3::new(0.0, 0.0, -1.0);
+    let sphere_radius = 0.5;
+    let t = hit_sphere(sphere_center, sphere_radius, ray);
+
+    if t > 0.0 {
+        let normal = (ray.at(t) - sphere_center).normalized();
+        return 0.5 * Color::new(1.0 + normal.x, 1.0 + normal.y, 1.0 + normal.z);
     }
 
     // Gradient background
@@ -76,7 +81,7 @@ fn ray_color(ray: &Ray) -> Color {
     (1.0 - lerp_factor) * white + lerp_factor * blue
 }
 
-fn hit_sphere(center: Point3, radius: f32, ray: &Ray) -> bool {
+fn hit_sphere(center: Point3, radius: f32, ray: &Ray) -> f32 {
     // Following the equation from chapter 5.2
     let oc = ray.origin() - center;
     let a = Vec3::dot(ray.direction(), ray.direction());
@@ -84,7 +89,11 @@ fn hit_sphere(center: Point3, radius: f32, ray: &Ray) -> bool {
     let c = Vec3::dot(oc, oc) - radius * radius;
     let discriminant = b * b - 4.0 * a * c;
 
-    discriminant >= 0.0
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-b - discriminant.sqrt()) / (2.0 * a)
+    }
 }
 
 fn print_progress(row: u32, image_height: u32) {
