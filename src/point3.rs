@@ -4,7 +4,7 @@ use crate::vec3::Vec3;
 
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct Point3 {
     pub x: f32,
     pub y: f32,

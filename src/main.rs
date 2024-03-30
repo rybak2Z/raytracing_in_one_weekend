@@ -1,7 +1,10 @@
 use raytracing_in_one_weekend::color::Color;
-use raytracing_in_one_weekend::{Point3, Ray, Vec3, MAX_VALUE};
+use raytracing_in_one_weekend::hittable_list::HittableList;
+use raytracing_in_one_weekend::sphere::Sphere;
+use raytracing_in_one_weekend::{Hittable, Interval, Point3, Ray, Vec3, MAX_VALUE};
 
 use std::io::{self, BufWriter, Write};
+use std::rc::Rc;
 use std::time::Instant;
 
 fn main() -> io::Result<()> {
@@ -12,6 +15,12 @@ fn main() -> io::Result<()> {
 
     let image_height = (image_width as f32 / aspect_ratio).round() as u32;
     let image_height = image_height.max(1);
+
+    // World
+
+    let mut world = HittableList::default();
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
 
@@ -49,7 +58,7 @@ fn main() -> io::Result<()> {
 
             let ray_direction = pixel - camera_pos;
             let ray = Ray::new(camera_pos, ray_direction);
-            let pixel_color = ray_color(&ray);
+            let pixel_color = ray_color(&ray, &world);
 
             write!(stdout, "{}", pixel_color.pixel_format())?;
         }
@@ -63,14 +72,10 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
-fn ray_color(ray: &Ray) -> Color {
-    let sphere_center = Point3::new(0.0, 0.0, -1.0);
-    let sphere_radius = 0.5;
-    let t = hit_sphere(sphere_center, sphere_radius, ray);
-
-    if t > 0.0 {
-        let normal = (ray.at(t) - sphere_center).normalized();
-        return 0.5 * Color::new(1.0 + normal.x, 1.0 + normal.y, 1.0 + normal.z);
+fn ray_color(ray: &Ray, world: &HittableList) -> Color {
+    if let Some(hit_rec) = world.hit(ray, Interval::new(0.0, f32::INFINITY)) {
+        let Vec3 { x, y, z } = hit_rec.normal;
+        return 0.5 * Color::new(1.0 + x, 1.0 + y, 1.0 + z);
     }
 
     // Gradient background
@@ -79,20 +84,6 @@ fn ray_color(ray: &Ray) -> Color {
     let direction = ray.direction().normalized();
     let lerp_factor = 0.5 * (direction.y + 1.0);
     (1.0 - lerp_factor) * white + lerp_factor * blue
-}
-
-fn hit_sphere(center: Point3, radius: f32, ray: &Ray) -> f32 {
-    let oc = ray.origin() - center;
-    let a = ray.direction().length_squared();
-    let half_b = Vec3::dot(oc, ray.direction());
-    let c = oc.length_squared() - radius * radius;
-    let discriminant = half_b * half_b - a * c;
-
-    if discriminant < 0.0 {
-        -1.0
-    } else {
-        (-half_b - discriminant.sqrt()) / a
-    }
 }
 
 fn print_progress(row: u32, image_height: u32) {
