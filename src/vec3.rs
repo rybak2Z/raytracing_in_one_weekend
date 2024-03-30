@@ -37,16 +37,18 @@ impl Vec3 {
     pub fn normalized(self) -> Vec3 {
         self / self.length()
     }
+}
 
-    pub fn dot(self, other: Vec3) -> f32 {
-        self.x * other.x + self.y * other.y + self.z * other.z
+impl Vec3 {
+    pub fn dot(lhs: Vec3, rhs: Vec3) -> f32 {
+        lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z
     }
 
-    pub fn cross(self, other: Vec3) -> Vec3 {
+    pub fn cross(lhs: Vec3, rhs: Vec3) -> Vec3 {
         Vec3::new(
-            self.y * other.z - self.z * other.y,
-            self.z * other.x - self.x * other.z,
-            self.x * other.y - self.y * other.x,
+            lhs.y * rhs.z - lhs.z * rhs.y,
+            lhs.z * rhs.x - lhs.x * rhs.z,
+            lhs.x * rhs.y - lhs.y * rhs.x,
         )
     }
 }
