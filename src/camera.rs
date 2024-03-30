@@ -1,3 +1,4 @@
+use crate::random::random_range;
 use crate::{Color, Hittable, Interval, Point3, Ray, Vec3, MAX_VALUE};
 
 use std::io::{self, BufWriter, Write};
@@ -8,6 +9,7 @@ pub struct Camera {
     image_height: u32,
     #[allow(dead_code)]
     aspect_ratio: f32,
+    samples_per_pixel: u32,
     position: Point3,
     pixel_top_left: Point3,
     pixel_delta_u: Vec3,
@@ -15,7 +17,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(image_width: u32, aspect_ratio: f32) -> Camera {
+    pub fn new(image_width: u32, aspect_ratio: f32, samples_per_pixel: u32) -> Camera {
         let image_height = (image_width as f32 / aspect_ratio).round() as u32;
         let image_height = image_height.max(1);
 
@@ -44,6 +46,7 @@ impl Camera {
             image_width,
             image_height,
             aspect_ratio,
+            samples_per_pixel,
             position,
             pixel_top_left,
             pixel_delta_u,
@@ -63,24 +66,44 @@ impl Camera {
 
         for row in 0..self.image_height {
             for col in 0..self.image_width {
-                let horizontal_offset = self.pixel_delta_u * col as f32;
-                let vertical_offset = self.pixel_delta_v * row as f32;
-                let pixel = self.pixel_top_left + horizontal_offset + vertical_offset;
+                let mut pixel_color = Color::new(0.0, 0.0, 0.0);
 
-                let ray_direction = pixel - self.position;
-                let ray = Ray::new(self.position, ray_direction);
-                let pixel_color = self.ray_color(&ray, world);
+                for _sample in 1..=self.samples_per_pixel {
+                    let ray = self.get_ray(row, col);
+                    pixel_color += self.ray_color(&ray, world);
+                }
 
-                write!(stdout, "{}", pixel_color.pixel_format())?;
+                write!(
+                    stdout,
+                    "{}",
+                    pixel_color.pixel_format(self.samples_per_pixel)
+                )?;
             }
 
-            writeln!(stdout)?;
             self.print_progress(row);
         }
 
         stdout.flush()?;
         self.print_finish(time_start);
         Ok(())
+    }
+
+    fn get_ray(&self, row: u32, column: u32) -> Ray {
+        let offset_x = column as f32 * self.pixel_delta_u;
+        let offset_y = row as f32 * self.pixel_delta_v;
+        let pixel_center = self.pixel_top_left + offset_x + offset_y;
+        let pixel_sample = pixel_center + self.pixel_square_sample();
+
+        let origin = self.position;
+        let direction = pixel_sample - origin;
+
+        Ray::new(origin, direction)
+    }
+
+    fn pixel_square_sample(&self) -> Vec3 {
+        let factor_x = random_range(-0.5, 0.5);
+        let factor_y = random_range(-0.5, 0.5);
+        (factor_x * self.pixel_delta_u) + (factor_y * self.pixel_delta_v)
     }
 
     fn ray_color(&self, ray: &Ray, world: &impl Hittable) -> Color {
