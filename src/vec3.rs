@@ -40,6 +40,11 @@ impl Vec3 {
         self / self.length()
     }
 
+    pub fn near_zero(self) -> bool {
+        let e = 1e-8;
+        self.x.abs() < e && self.y.abs() < e && self.z.abs() < e
+    }
+
     pub fn random() -> Vec3 {
         Vec3 {
             x: random::random(),
