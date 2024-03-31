@@ -119,9 +119,16 @@ impl Camera {
         }
 
         if let Some(hit_rec) = world.hit(ray, Interval::new(0.001, f32::INFINITY)) {
-            let diffuse_direction = hit_rec.normal + Vec3::random_unit_vector();
-            let reflected_ray = Ray::new(hit_rec.point, diffuse_direction);
-            return 0.5 * Camera::ray_color(&reflected_ray, depth - 1, world);
+            // At this point, the hit record should have a material, so we can unwrap
+            let material = hit_rec.material.as_ref().unwrap();
+
+            let color = if let Some(scatter) = material.scatter(ray, &hit_rec) {
+                scatter.attenuation * Camera::ray_color(&scatter.ray, depth - 1, world)
+            } else {
+                Color::new(0.0, 0.0, 0.0)
+            };
+
+            return color;
         }
 
         // Gradient background
