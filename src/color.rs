@@ -31,6 +31,10 @@ impl Color {
         g *= downscale;
         b *= downscale;
 
+        r = Color::linear_to_gamma(r);
+        g = Color::linear_to_gamma(g);
+        b = Color::linear_to_gamma(b);
+
         // The +1 makes it so the interval of numbers that would be scaled to
         // MAX_VALUE is the same size as the intervals for all other values.
         // Without this, a color could only be scaled up to MAX_VALUE when it
@@ -43,6 +47,10 @@ impl Color {
             ((g * upscale) as u32).clamp(0, MAX_VALUE),
             ((b * upscale) as u32).clamp(0, MAX_VALUE),
         )
+    }
+
+    fn linear_to_gamma(linear_component: f32) -> f32 {
+        linear_component.sqrt()
     }
 }
 
