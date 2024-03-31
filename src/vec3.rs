@@ -40,6 +40,10 @@ impl Vec3 {
         self / self.length()
     }
 
+    pub fn reflected(self, normal: Vec3) -> Vec3 {
+        self - 2.0 * Vec3::dot(self, normal) * normal
+    }
+
     pub fn near_zero(self) -> bool {
         let e = 1e-8;
         self.x.abs() < e && self.y.abs() < e && self.z.abs() < e
