@@ -17,7 +17,8 @@ fn main() -> io::Result<()> {
     let image_width = 400;
     let aspect_ratio = 16.0 / 9.0;
     let samples_per_pixel = 100;
-    let camera = Camera::new(image_width, aspect_ratio, samples_per_pixel);
+    let max_depth = 10;
+    let camera = Camera::new(image_width, aspect_ratio, samples_per_pixel, max_depth);
 
     camera.render(&world)
 }

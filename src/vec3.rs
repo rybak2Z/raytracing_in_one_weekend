@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use crate::random;
+
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Default, Debug, Clone, Copy)]
@@ -36,6 +38,43 @@ impl Vec3 {
 
     pub fn normalized(self) -> Vec3 {
         self / self.length()
+    }
+
+    pub fn random() -> Vec3 {
+        Vec3 {
+            x: random::random(),
+            y: random::random(),
+            z: random::random(),
+        }
+    }
+
+    pub fn random_range(min: f32, max: f32) -> Vec3 {
+        let x = random::random_range(min, max);
+        let y = random::random_range(min, max);
+        let z = random::random_range(min, max);
+        Vec3 { x, y, z }
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
+        let mut vector = Vec3::random_range(-1.0, 1.0);
+        while vector.length_squared() > 1.0 {
+            vector = Vec3::random_range(-1.0, 1.0);
+        }
+        vector
+    }
+
+    pub fn random_unit_vector() -> Vec3 {
+        let mut in_unit_sphere = Vec3::random_in_unit_sphere();
+        in_unit_sphere.normalize();
+        in_unit_sphere
+    }
+
+    pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
+        let on_unit_sphere = Vec3::random_unit_vector();
+        match Vec3::dot(on_unit_sphere, normal) > 0.0 {
+            true => on_unit_sphere,
+            false => -on_unit_sphere,
+        }
     }
 }
 
