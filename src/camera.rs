@@ -10,6 +10,7 @@ pub struct Camera {
     #[allow(dead_code)]
     aspect_ratio: f32,
     samples_per_pixel: u32,
+    max_depth: u32,
     position: Point3,
     pixel_top_left: Point3,
     pixel_delta_u: Vec3,
@@ -17,7 +18,12 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(image_width: u32, aspect_ratio: f32, samples_per_pixel: u32) -> Camera {
+    pub fn new(
+        image_width: u32,
+        aspect_ratio: f32,
+        samples_per_pixel: u32,
+        max_depth: u32,
+    ) -> Camera {
         let image_height = (image_width as f32 / aspect_ratio).round() as u32;
         let image_height = image_height.max(1);
 
@@ -47,6 +53,7 @@ impl Camera {
             image_height,
             aspect_ratio,
             samples_per_pixel,
+            max_depth,
             position,
             pixel_top_left,
             pixel_delta_u,
@@ -70,7 +77,7 @@ impl Camera {
 
                 for _sample in 1..=self.samples_per_pixel {
                     let ray = self.get_ray(row, col);
-                    pixel_color += self.ray_color(&ray, world);
+                    pixel_color += Camera::ray_color(&ray, self.max_depth, world);
                 }
 
                 write!(
@@ -106,10 +113,15 @@ impl Camera {
         (factor_x * self.pixel_delta_u) + (factor_y * self.pixel_delta_v)
     }
 
-    fn ray_color(&self, ray: &Ray, world: &impl Hittable) -> Color {
-        if let Some(hit_rec) = world.hit(ray, Interval::new(0.0, f32::INFINITY)) {
-            let Vec3 { x, y, z } = hit_rec.normal;
-            return 0.5 * Color::new(1.0 + x, 1.0 + y, 1.0 + z);
+    fn ray_color(ray: &Ray, depth: u32, world: &impl Hittable) -> Color {
+        if depth == 0 {
+            return Color::new(0.0, 0.0, 0.0);
+        }
+
+        if let Some(hit_rec) = world.hit(ray, Interval::new(0.001, f32::INFINITY)) {
+            let diffuse_direction = hit_rec.normal + Vec3::random_unit_vector();
+            let reflected_ray = Ray::new(hit_rec.point, diffuse_direction);
+            return 0.5 * Camera::ray_color(&reflected_ray, depth - 1, world);
         }
 
         // Gradient background
