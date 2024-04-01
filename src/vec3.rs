@@ -92,6 +92,23 @@ impl Vec3 {
             false => -on_unit_sphere,
         }
     }
+
+    pub fn random_in_unit_disk() -> Vec3 {
+        let random_in_unit_square = || {
+            Vec3::new(
+                random::random_range(-1.0, 1.0),
+                random::random_range(-1.0, 1.0),
+                0.0,
+            )
+        };
+
+        let mut vector = random_in_unit_square();
+        while vector.length_squared() > 1.0 {
+            vector = random_in_unit_square();
+        }
+
+        vector
+    }
 }
 
 impl Vec3 {
