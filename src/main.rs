@@ -1,9 +1,8 @@
 use raytracing_in_one_weekend::camera::Camera;
 use raytracing_in_one_weekend::hittable_list::HittableList;
-use raytracing_in_one_weekend::material::Metal;
 use raytracing_in_one_weekend::random;
 use raytracing_in_one_weekend::sphere::Sphere;
-use raytracing_in_one_weekend::{Color, Lambertian, Point3};
+use raytracing_in_one_weekend::{Color, Dialectric, Lambertian, Metal, Point3};
 
 use std::io;
 use std::rc::Rc;
@@ -14,9 +13,9 @@ fn main() -> io::Result<()> {
     let mut world = HittableList::default();
 
     let material_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
-    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
-    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
+    let material_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
+    let material_left = Rc::new(Dialectric::new(1.5));
+    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
 
     let pos_ground = Point3::new(0.0, -100.5, -1.0);
     let pos_center = Point3::new(0.0, 0.0, -1.0);
