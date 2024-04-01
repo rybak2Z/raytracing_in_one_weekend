@@ -11,45 +11,64 @@ pub struct Camera {
     aspect_ratio: f32,
     #[allow(dead_code)]
     vertical_fov: f32,
+    position: Point3,
+    #[allow(dead_code)]
+    look_at: Point3,
+    #[allow(dead_code)]
+    view_up: Vec3,
     samples_per_pixel: u32,
     max_depth: u32,
-    position: Point3,
     pixel_top_left: Point3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
+
+    // Camera basis vectors
+    #[allow(dead_code)]
+    up: Vec3,
+    #[allow(dead_code)]
+    right: Vec3,
+    #[allow(dead_code)]
+    back: Vec3,
 }
 
 impl Camera {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         image_width: u32,
         aspect_ratio: f32,
         vertical_fov: f32,
+        look_from: Point3,
+        look_at: Point3,
+        view_up: Vec3,
         samples_per_pixel: u32,
         max_depth: u32,
     ) -> Camera {
         let image_height = (image_width as f32 / aspect_ratio).round() as u32;
         let image_height = image_height.max(1);
 
-        let position = Point3::zero();
-
         // Determine viewport dimensions
-        let focal_length = 1.0;
+        let focal_length = (look_at - look_from).length();
         let theta = vertical_fov.to_radians();
         let h = (theta / 2.0).tan();
         let viewport_height = 2.0 * h * focal_length;
         let actual_aspect_ratio = image_width as f32 / image_height as f32;
         let viewport_width = viewport_height * actual_aspect_ratio;
 
+        // Basis vectors for the camera coordinate frame
+        let back = (look_from - look_at).normalized();
+        let right = Vec3::cross(view_up, back).normalized();
+        let up = Vec3::cross(back, right);
+
         // Vectors across the horizontal and down the vertical viewport edges
-        let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+        let viewport_u = viewport_width * right;
+        let viewport_v = viewport_height * (-up);
 
         // Horizontal and vertical delta vectors from pixel to pixel
         let pixel_delta_u = viewport_u / image_width as f32;
         let pixel_delta_v = viewport_v / image_height as f32;
 
         // Calculate position of top left pixel
-        let viewport_center = position - Vec3::new(0.0, 0.0, focal_length);
+        let viewport_center = look_from - focal_length * back;
         let viewport_top_left = viewport_center - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel_top_left = viewport_top_left + pixel_delta_u / 2.0 + pixel_delta_v / 2.0;
 
@@ -58,12 +77,17 @@ impl Camera {
             image_height,
             aspect_ratio,
             vertical_fov,
+            position: look_from,
+            look_at,
+            view_up,
             samples_per_pixel,
             max_depth,
-            position,
             pixel_top_left,
             pixel_delta_u,
             pixel_delta_v,
+            up,
+            right,
+            back,
         }
     }
 
