@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::MAX_VALUE;
+use crate::{random, MAX_VALUE};
 
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign};
 
@@ -47,6 +47,10 @@ impl Color {
             ((g * upscale) as u32).clamp(0, MAX_VALUE),
             ((b * upscale) as u32).clamp(0, MAX_VALUE),
         )
+    }
+
+    pub fn random() -> Color {
+        Color::new(random::random(), random::random(), random::random())
     }
 
     fn linear_to_gamma(linear_component: f32) -> f32 {
