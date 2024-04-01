@@ -13,7 +13,7 @@ pub mod vec3;
 pub use color::Color;
 pub use hittable::{HitRecord, Hittable};
 pub use interval::Interval;
-pub use material::{Lambertian, Material, Scatter};
+pub use material::{Dialectric, Lambertian, Material, Metal, Scatter};
 pub use point3::Point3;
 pub use ray::Ray;
 pub use vec3::Vec3;

@@ -44,6 +44,13 @@ impl Vec3 {
         self - 2.0 * Vec3::dot(self, normal) * normal
     }
 
+    pub fn refracted(self, normal: Vec3, etai_over_etat: f32) -> Vec3 {
+        let cos_theta = Vec3::dot(-self, normal).min(1.0);
+        let perpendicular_part = etai_over_etat * (self + cos_theta * normal);
+        let parallel_part = -(1.0 - perpendicular_part.length_squared()).abs().sqrt() * normal;
+        perpendicular_part + parallel_part
+    }
+
     pub fn near_zero(self) -> bool {
         let e = 1e-8;
         self.x.abs() < e && self.y.abs() < e && self.z.abs() < e
