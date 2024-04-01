@@ -40,6 +40,8 @@ fn main() -> io::Result<()> {
     let look_from = Point3::new(-2.0, 2.0, 1.0);
     let look_at = Point3::new(0.0, 0.0, -1.0);
     let view_up = Vec3::new(0.0, 1.0, 0.0);
+    let focus_distance = 3.4;
+    let defocus_angle = 10.0;
     let samples_per_pixel = 100;
     let max_depth = 10;
 
@@ -50,6 +52,8 @@ fn main() -> io::Result<()> {
         look_from,
         look_at,
         view_up,
+        focus_distance,
+        defocus_angle,
         samples_per_pixel,
         max_depth,
     );
