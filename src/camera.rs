@@ -9,6 +9,8 @@ pub struct Camera {
     image_height: u32,
     #[allow(dead_code)]
     aspect_ratio: f32,
+    #[allow(dead_code)]
+    vertical_fov: f32,
     samples_per_pixel: u32,
     max_depth: u32,
     position: Point3,
@@ -21,6 +23,7 @@ impl Camera {
     pub fn new(
         image_width: u32,
         aspect_ratio: f32,
+        vertical_fov: f32,
         samples_per_pixel: u32,
         max_depth: u32,
     ) -> Camera {
@@ -31,7 +34,9 @@ impl Camera {
 
         // Determine viewport dimensions
         let focal_length = 1.0;
-        let viewport_height = 2.0;
+        let theta = vertical_fov.to_radians();
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h * focal_length;
         let actual_aspect_ratio = image_width as f32 / image_height as f32;
         let viewport_width = viewport_height * actual_aspect_ratio;
 
@@ -52,6 +57,7 @@ impl Camera {
             image_width,
             image_height,
             aspect_ratio,
+            vertical_fov,
             samples_per_pixel,
             max_depth,
             position,
