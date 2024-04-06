@@ -11,6 +11,7 @@ pub struct Vec3 {
     pub z: f32,
 }
 
+/// Constructors
 impl Vec3 {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Vec3 { x, y, z }
@@ -23,7 +24,10 @@ impl Vec3 {
             z: 0.0,
         }
     }
+}
 
+/// Properties
+impl Vec3 {
     pub fn length(self) -> f32 {
         self.length_squared().sqrt()
     }
@@ -32,31 +36,55 @@ impl Vec3 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
+    pub fn near_zero(self) -> bool {
+        let e = 1e-8;
+        self.x.abs() < e && self.y.abs() < e && self.z.abs() < e
+    }
+}
+
+/// Mutations
+impl Vec3 {
     pub fn normalize(&mut self) {
         *self /= self.length();
     }
+}
 
-    pub fn normalized(self) -> Vec3 {
+/// Transformations
+impl Vec3 {
+    pub fn normalized(self) -> Self {
         self / self.length()
     }
 
-    pub fn reflected(self, normal: Vec3) -> Vec3 {
+    pub fn reflected(self, normal: Vec3) -> Self {
         self - 2.0 * Vec3::dot(self, normal) * normal
     }
 
-    pub fn refracted(self, normal: Vec3, etai_over_etat: f32) -> Vec3 {
+    pub fn refracted(self, normal: Vec3, etai_over_etat: f32) -> Self {
         let cos_theta = Vec3::dot(-self, normal).min(1.0);
         let perpendicular_part = etai_over_etat * (self + cos_theta * normal);
         let parallel_part = -(1.0 - perpendicular_part.length_squared()).abs().sqrt() * normal;
         perpendicular_part + parallel_part
     }
+}
 
-    pub fn near_zero(self) -> bool {
-        let e = 1e-8;
-        self.x.abs() < e && self.y.abs() < e && self.z.abs() < e
+/// Other operations
+impl Vec3 {
+    pub fn dot(lhs: Vec3, rhs: Vec3) -> f32 {
+        lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z
     }
 
-    pub fn random() -> Vec3 {
+    pub fn cross(lhs: Vec3, rhs: Vec3) -> Vec3 {
+        Vec3::new(
+            lhs.y * rhs.z - lhs.z * rhs.y,
+            lhs.z * rhs.x - lhs.x * rhs.z,
+            lhs.x * rhs.y - lhs.y * rhs.x,
+        )
+    }
+}
+
+/// Constructors for randomized vectors
+impl Vec3 {
+    pub fn random() -> Self {
         Vec3 {
             x: random::random(),
             y: random::random(),
@@ -64,14 +92,14 @@ impl Vec3 {
         }
     }
 
-    pub fn random_range(min: f32, max: f32) -> Vec3 {
+    pub fn random_range(min: f32, max: f32) -> Self {
         let x = random::random_range(min, max);
         let y = random::random_range(min, max);
         let z = random::random_range(min, max);
         Vec3 { x, y, z }
     }
 
-    pub fn random_in_unit_sphere() -> Vec3 {
+    pub fn random_in_unit_sphere() -> Self {
         let mut vector = Vec3::random_range(-1.0, 1.0);
         while vector.length_squared() > 1.0 {
             vector = Vec3::random_range(-1.0, 1.0);
@@ -79,13 +107,13 @@ impl Vec3 {
         vector
     }
 
-    pub fn random_unit_vector() -> Vec3 {
+    pub fn random_unit_vector() -> Self {
         let mut in_unit_sphere = Vec3::random_in_unit_sphere();
         in_unit_sphere.normalize();
         in_unit_sphere
     }
 
-    pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
+    pub fn random_on_hemisphere(normal: Vec3) -> Self {
         let on_unit_sphere = Vec3::random_unit_vector();
         match Vec3::dot(on_unit_sphere, normal) > 0.0 {
             true => on_unit_sphere,
@@ -93,7 +121,7 @@ impl Vec3 {
         }
     }
 
-    pub fn random_in_unit_disk() -> Vec3 {
+    pub fn random_in_unit_disk() -> Self {
         let random_in_unit_square = || {
             Vec3::new(
                 random::random_range(-1.0, 1.0),
@@ -108,20 +136,6 @@ impl Vec3 {
         }
 
         vector
-    }
-}
-
-impl Vec3 {
-    pub fn dot(lhs: Vec3, rhs: Vec3) -> f32 {
-        lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z
-    }
-
-    pub fn cross(lhs: Vec3, rhs: Vec3) -> Vec3 {
-        Vec3::new(
-            lhs.y * rhs.z - lhs.z * rhs.y,
-            lhs.z * rhs.x - lhs.x * rhs.z,
-            lhs.x * rhs.y - lhs.y * rhs.x,
-        )
     }
 }
 
