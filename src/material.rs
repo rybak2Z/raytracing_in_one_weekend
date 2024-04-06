@@ -14,7 +14,7 @@ pub struct Scatter {
 }
 
 impl Scatter {
-    pub fn new(ray: Ray, attenuation: Color) -> Scatter {
+    pub fn new(ray: Ray, attenuation: Color) -> Self {
         Scatter { ray, attenuation }
     }
 }

@@ -11,7 +11,7 @@ pub struct Color {
 
 impl Color {
     pub fn new(red: f32, green: f32, blue: f32) -> Self {
-        Color {
+        Self {
             r: red,
             g: green,
             b: blue,
@@ -29,9 +29,9 @@ impl Color {
         g *= downscale;
         b *= downscale;
 
-        r = Color::linear_to_gamma(r);
-        g = Color::linear_to_gamma(g);
-        b = Color::linear_to_gamma(b);
+        r = Self::linear_to_gamma(r);
+        g = Self::linear_to_gamma(g);
+        b = Self::linear_to_gamma(b);
 
         // The +1 makes it so the interval of numbers that would be scaled to
         // MAX_VALUE is the same size as the intervals for all other values.
@@ -47,8 +47,8 @@ impl Color {
         )
     }
 
-    pub fn random() -> Color {
-        Color::new(random::random(), random::random(), random::random())
+    pub fn random() -> Self {
+        Self::new(random::random(), random::random(), random::random())
     }
 
     fn linear_to_gamma(linear_component: f32) -> f32 {
@@ -60,7 +60,7 @@ impl Add for Color {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Color::new(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b)
+        Self::new(self.r + rhs.r, self.g + rhs.g, self.b + rhs.b)
     }
 }
 
@@ -74,7 +74,7 @@ impl Mul for Color {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        Color::new(self.r * rhs.r, self.g * rhs.g, self.b * rhs.b)
+        Self::new(self.r * rhs.r, self.g * rhs.g, self.b * rhs.b)
     }
 }
 
@@ -88,7 +88,7 @@ impl Mul<f32> for Color {
     type Output = Self;
 
     fn mul(self, rhs: f32) -> Self::Output {
-        Color::new(self.r * rhs, self.g * rhs, self.b * rhs)
+        Self::new(self.r * rhs, self.g * rhs, self.b * rhs)
     }
 }
 

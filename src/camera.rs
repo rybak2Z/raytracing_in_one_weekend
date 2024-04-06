@@ -49,7 +49,7 @@ impl Camera {
         defocus_angle: f32,
         samples_per_pixel: u32,
         max_depth: u32,
-    ) -> Camera {
+    ) -> Self {
         let image_height = (image_width as f32 / aspect_ratio).round() as u32;
         let image_height = image_height.max(1);
 
@@ -83,7 +83,7 @@ impl Camera {
         let defocus_disk_u = right * defocus_radius;
         let defocus_disk_v = up * defocus_radius;
 
-        Camera {
+        Self {
             image_width,
             image_height,
             aspect_ratio,
@@ -122,7 +122,7 @@ impl Camera {
 
                 for _sample in 1..=self.samples_per_pixel {
                     let ray = self.get_ray(row, col);
-                    pixel_color += Camera::ray_color(&ray, self.max_depth, world);
+                    pixel_color += Self::ray_color(&ray, self.max_depth, world);
                 }
 
                 write!(
@@ -176,7 +176,7 @@ impl Camera {
             let material = hit_rec.material.as_ref().unwrap();
 
             let color = if let Some(scatter) = material.scatter(ray, &hit_rec) {
-                scatter.attenuation * Camera::ray_color(&scatter.ray, depth - 1, world)
+                scatter.attenuation * Self::ray_color(&scatter.ray, depth - 1, world)
             } else {
                 Color::new(0.0, 0.0, 0.0)
             };

@@ -8,9 +8,9 @@ pub struct Metal {
 }
 
 impl Metal {
-    pub fn new(albedo: Color, fuzz: f32) -> Metal {
+    pub fn new(albedo: Color, fuzz: f32) -> Self {
         let fuzz = if fuzz < 1.0 { fuzz } else { 1.0 };
-        Metal { albedo, fuzz }
+        Self { albedo, fuzz }
     }
 }
 
