@@ -9,8 +9,8 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f32, material: Rc<dyn Material>) -> Sphere {
-        Sphere {
+    pub fn new(center: Point3, radius: f32, material: Rc<dyn Material>) -> Self {
+        Self {
             center,
             radius,
             material,

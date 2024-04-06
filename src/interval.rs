@@ -8,8 +8,8 @@ pub struct Interval {
 }
 
 impl Interval {
-    pub const fn new(min: f32, max: f32) -> Interval {
-        Interval { min, max }
+    pub const fn new(min: f32, max: f32) -> Self {
+        Self { min, max }
     }
 
     pub fn contains(self, x: f32) -> bool {

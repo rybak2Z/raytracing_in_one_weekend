@@ -7,8 +7,8 @@ pub struct Dialectric {
 }
 
 impl Dialectric {
-    pub fn new(index_of_refraction: f32) -> Dialectric {
-        Dialectric {
+    pub fn new(index_of_refraction: f32) -> Self {
+        Self {
             refraction: index_of_refraction,
         }
     }

@@ -13,22 +13,22 @@ pub struct Point3 {
 
 impl Point3 {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
-        Point3 { x, y, z }
+        Self { x, y, z }
     }
 
     pub fn zero() -> Self {
-        Point3 {
+        Self {
             x: 0.0,
             y: 0.0,
             z: 0.0,
         }
     }
 
-    pub fn distance(self, other: Point3) -> f32 {
+    pub fn distance(self, other: Self) -> f32 {
         (self - other).length()
     }
 
-    pub fn distance_squared(self, other: Point3) -> f32 {
+    pub fn distance_squared(self, other: Self) -> f32 {
         (self - other).length_squared()
     }
 }
@@ -37,7 +37,7 @@ impl Add<Vec3> for Point3 {
     type Output = Self;
 
     fn add(self, rhs: Vec3) -> Self::Output {
-        Point3::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
+        Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
 
