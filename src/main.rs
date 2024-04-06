@@ -1,4 +1,4 @@
-use raytracing_in_one_weekend::camera::Camera;
+use raytracing_in_one_weekend::camera::CameraBuilder;
 use raytracing_in_one_weekend::hittable_list::HittableList;
 use raytracing_in_one_weekend::sphere::Sphere;
 use raytracing_in_one_weekend::{random, Dialectric, Material, Metal};
@@ -12,29 +12,20 @@ fn main() -> io::Result<()> {
 
     let world = build_scene();
 
-    let image_width = 800;
-    let aspect_ratio = 16.0 / 9.0;
-    let vertical_fov = 20.0;
-    let look_from = Point3::new(13.0, 2.0, 3.0);
-    let look_at = Point3::new(0.0, 0.0, 0.0);
-    let view_up = Vec3::new(0.0, 1.0, 0.0);
-    let focus_distance = 10.0;
-    let defocus_angle = 0.6;
-    let samples_per_pixel = 500;
-    let max_depth = 10;
+    let camera_builder = CameraBuilder {
+        image_width: 100,
+        aspect_ratio: 16.0 / 9.0,
+        vertical_fov: 20.0,
+        position: Point3::new(13.0, 2.0, 3.0),
+        look_at: Point3::new(0.0, 0.0, 0.0),
+        view_up: Vec3::new(0.0, 1.0, 0.0),
+        focus_distance: 10.0,
+        defocus_angle: 0.6,
+        samples_per_pixel: 100,
+        max_depth: 5,
+    };
 
-    let camera = Camera::new(
-        image_width,
-        aspect_ratio,
-        vertical_fov,
-        look_from,
-        look_at,
-        view_up,
-        focus_distance,
-        defocus_angle,
-        samples_per_pixel,
-        max_depth,
-    );
+    let camera = camera_builder.finalize();
 
     camera.render(&world)
 }
