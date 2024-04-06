@@ -10,6 +10,36 @@ use std::rc::Rc;
 fn main() -> io::Result<()> {
     random::initialize();
 
+    let world = build_scene();
+
+    let image_width = 800;
+    let aspect_ratio = 16.0 / 9.0;
+    let vertical_fov = 20.0;
+    let look_from = Point3::new(13.0, 2.0, 3.0);
+    let look_at = Point3::new(0.0, 0.0, 0.0);
+    let view_up = Vec3::new(0.0, 1.0, 0.0);
+    let focus_distance = 10.0;
+    let defocus_angle = 0.6;
+    let samples_per_pixel = 500;
+    let max_depth = 10;
+
+    let camera = Camera::new(
+        image_width,
+        aspect_ratio,
+        vertical_fov,
+        look_from,
+        look_at,
+        view_up,
+        focus_distance,
+        defocus_angle,
+        samples_per_pixel,
+        max_depth,
+    );
+
+    camera.render(&world)
+}
+
+fn build_scene() -> HittableList {
     let mut world = HittableList::default();
 
     let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
@@ -73,29 +103,5 @@ fn main() -> io::Result<()> {
     let sphere_3 = Sphere::new(position_3, 1.0, material_3);
     world.add(Rc::new(sphere_3));
 
-    let image_width = 800;
-    let aspect_ratio = 16.0 / 9.0;
-    let vertical_fov = 20.0;
-    let look_from = Point3::new(13.0, 2.0, 3.0);
-    let look_at = Point3::new(0.0, 0.0, 0.0);
-    let view_up = Vec3::new(0.0, 1.0, 0.0);
-    let focus_distance = 10.0;
-    let defocus_angle = 0.6;
-    let samples_per_pixel = 500;
-    let max_depth = 10;
-
-    let camera = Camera::new(
-        image_width,
-        aspect_ratio,
-        vertical_fov,
-        look_from,
-        look_at,
-        view_up,
-        focus_distance,
-        defocus_angle,
-        samples_per_pixel,
-        max_depth,
-    );
-
-    camera.render(&world)
+    world
 }

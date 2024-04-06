@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::{random, MAX_VALUE};
 
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign};
