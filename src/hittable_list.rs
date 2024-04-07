@@ -1,18 +1,18 @@
-use crate::{HitRecord, Hittable, Interval};
+use crate::{HitRecord, Hittable, Interval, SharedHittable};
 
-use std::rc::Rc;
+use std::sync::Arc;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct HittableList {
-    objects: Vec<Rc<dyn Hittable>>,
+    objects: Vec<Arc<dyn Hittable + Send + Sync>>,
 }
 
 impl HittableList {
-    pub fn new(objects: Vec<Rc<dyn Hittable>>) -> Self {
+    pub fn new(objects: Vec<SharedHittable>) -> Self {
         Self { objects }
     }
 
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
+    pub fn add(&mut self, object: SharedHittable) {
         self.objects.push(object);
     }
 }

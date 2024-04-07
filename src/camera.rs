@@ -5,6 +5,7 @@ pub use camera_builder::CameraBuilder;
 use crate::random::random_range;
 use crate::{Point3, Ray, Vec3};
 
+#[derive(Clone)]
 struct Orientation {
     #[allow(dead_code)]
     look_at: Point3,
@@ -12,12 +13,14 @@ struct Orientation {
     view_up: Vec3,
 }
 
+#[derive(Clone)]
 struct Basis {
     up: Vec3,
     right: Vec3,
     back: Vec3,
 }
 
+#[derive(Clone)]
 struct Defocus {
     #[allow(dead_code)]
     focus_distance: f32,
@@ -33,6 +36,7 @@ impl Defocus {
     }
 }
 
+#[derive(Clone)]
 struct Image {
     width: u32,
     height: u32,
@@ -40,6 +44,7 @@ struct Image {
     aspect_ratio: f32,
 }
 
+#[derive(Clone)]
 struct Viewport {
     #[allow(dead_code)]
     width: f32,
@@ -65,6 +70,7 @@ impl Viewport {
     }
 }
 
+#[derive(Clone)]
 pub struct Camera {
     position: Point3,
     #[allow(dead_code)]

@@ -1,18 +1,16 @@
-use crate::{Interval, Material, Point3, Ray, Vec3};
-
-use std::rc::Rc;
+use crate::{Interval, Point3, Ray, SharedMaterial, Vec3};
 
 #[derive(Default)]
 pub struct HitRecord {
     pub point: Point3,
     pub normal: Vec3,
-    pub material: Option<Rc<dyn Material>>,
+    pub material: Option<SharedMaterial>,
     pub t: f32,
     pub front_face: bool,
 }
 
 impl HitRecord {
-    pub fn new(point: Point3, normal: Vec3, material: Rc<dyn Material>, t: f32) -> Self {
+    pub fn new(point: Point3, normal: Vec3, material: SharedMaterial, t: f32) -> Self {
         Self {
             point,
             normal,
