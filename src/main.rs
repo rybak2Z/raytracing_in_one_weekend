@@ -1,8 +1,9 @@
 use raytracing_in_one_weekend::camera::CameraBuilder;
 use raytracing_in_one_weekend::hittable_list::HittableList;
 use raytracing_in_one_weekend::sphere::Sphere;
-use raytracing_in_one_weekend::{random, Dialectric, Material, Metal};
-use raytracing_in_one_weekend::{Color, Lambertian, Point3, Vec3};
+use raytracing_in_one_weekend::{
+    random, Color, Dialectric, Lambertian, Material, Metal, Point3, Renderer, Vec3,
+};
 
 use std::io;
 use std::rc::Rc;
@@ -21,13 +22,15 @@ fn main() -> io::Result<()> {
         view_up: Vec3::new(0.0, 1.0, 0.0),
         focus_distance: 10.0,
         defocus_angle: 0.6,
-        samples_per_pixel: 100,
-        max_depth: 5,
     };
 
     let camera = camera_builder.finalize();
 
-    camera.render(&world)
+    let samples_per_pixel = 500;
+    let max_ray_depth = 20;
+    let renderer = Renderer::new(samples_per_pixel, max_ray_depth);
+
+    renderer.render(&world, &camera)
 }
 
 fn build_scene() -> HittableList {

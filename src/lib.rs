@@ -7,6 +7,7 @@ pub mod material;
 pub mod point3;
 pub mod random;
 pub mod ray;
+pub mod renderer;
 pub mod sphere;
 pub mod vec3;
 
@@ -16,6 +17,7 @@ pub use interval::Interval;
 pub use material::{Dialectric, Lambertian, Material, Metal, Scatter};
 pub use point3::Point3;
 pub use ray::Ray;
+pub use renderer::Renderer;
 pub use vec3::Vec3;
 
 pub const MAX_VALUE: u32 = 255;

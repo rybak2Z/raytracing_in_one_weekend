@@ -1,4 +1,4 @@
-use super::{Basis, Camera, Defocus, Image, Orientation, RenderOptions, Viewport};
+use super::{Basis, Camera, Defocus, Image, Orientation, Viewport};
 
 use crate::{Point3, Vec3};
 
@@ -11,8 +11,6 @@ pub struct CameraBuilder {
     pub view_up: Vec3,
     pub focus_distance: f32,
     pub defocus_angle: f32,
-    pub samples_per_pixel: u32,
-    pub max_depth: u32,
 }
 
 impl Default for CameraBuilder {
@@ -26,8 +24,6 @@ impl Default for CameraBuilder {
             view_up: Vec3::new(0.0, 1.0, 0.0),
             focus_distance: 1.0,
             defocus_angle: 0.0,
-            samples_per_pixel: 10,
-            max_depth: 3,
         }
     }
 }
@@ -44,11 +40,6 @@ impl CameraBuilder {
             view_up: self.view_up,
         };
 
-        let render_options = RenderOptions {
-            samples_per_pixel: self.samples_per_pixel,
-            max_depth: self.max_depth,
-        };
-
         Camera {
             position: self.position,
             vertical_fov: self.vertical_fov,
@@ -57,7 +48,6 @@ impl CameraBuilder {
             defocus,
             image,
             viewport,
-            render_options,
         }
     }
 
