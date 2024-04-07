@@ -1,6 +1,7 @@
 const FILE_TYPE: &str = "P3";
 
 use crate::color::{Color, MAX_VALUE};
+use crate::renderer::ImageBuffer;
 
 use std::io::{self, BufWriter, Stdout, Write};
 use std::time::Instant;
@@ -23,7 +24,15 @@ impl FileWriter {
         Ok(Self { stdout })
     }
 
-    pub fn write_pixel(&mut self, pixel_color: Color, samples_per_pixel: u32) -> io::Result<()> {
+    pub fn write_image(&mut self, image: ImageBuffer, samples_per_pixel: u32) -> io::Result<()> {
+        for pixel_color in image.get_buffer().iter() {
+            self.write_pixel(*pixel_color, samples_per_pixel)?;
+        }
+
+        Ok(())
+    }
+
+    fn write_pixel(&mut self, pixel_color: Color, samples_per_pixel: u32) -> io::Result<()> {
         write!(
             self.stdout,
             "{}",
