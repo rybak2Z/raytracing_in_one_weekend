@@ -1,6 +1,8 @@
-use crate::{random, MAX_VALUE};
+use crate::random;
 
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign};
+
+pub const MAX_VALUE: u32 = 255;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Color {

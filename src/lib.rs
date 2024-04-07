@@ -10,6 +10,7 @@ pub mod ray;
 pub mod renderer;
 pub mod sphere;
 pub mod vec3;
+pub mod writing;
 
 pub use color::Color;
 pub use hittable::{HitRecord, Hittable};
@@ -19,5 +20,3 @@ pub use point3::Point3;
 pub use ray::Ray;
 pub use renderer::Renderer;
 pub use vec3::Vec3;
-
-pub const MAX_VALUE: u32 = 255;

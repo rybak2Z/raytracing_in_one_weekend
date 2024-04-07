@@ -1,8 +1,8 @@
 use crate::camera::Camera;
-use crate::{Color, Hittable, Interval, Ray, MAX_VALUE};
+use crate::writing::{FileWriter, ProgressWriter};
+use crate::{Color, Hittable, Interval, Ray};
 
-use std::io::{self, BufWriter, Write};
-use std::time::Instant;
+use std::io;
 
 pub struct Renderer {
     samples_per_pixel: u32,
@@ -18,16 +18,8 @@ impl Renderer {
     }
 
     pub fn render(&self, world: &impl Hittable, camera: &Camera) -> io::Result<()> {
-        let mut stdout = BufWriter::new(io::stdout());
-        write!(
-            stdout,
-            "P3\n{} {}\n{}\n",
-            camera.image_width(),
-            camera.image_height(),
-            MAX_VALUE
-        )?;
-
-        let time_start = Instant::now();
+        let mut file_writer = FileWriter::new(camera.image_width(), camera.image_height())?;
+        let progress_writer = ProgressWriter::new();
 
         for row in 0..camera.image_height() {
             for col in 0..camera.image_width() {
@@ -38,18 +30,12 @@ impl Renderer {
                     pixel_color += Self::ray_color(&ray, self.max_ray_depth, world);
                 }
 
-                write!(
-                    stdout,
-                    "{}",
-                    pixel_color.pixel_format(self.samples_per_pixel)
-                )?;
+                file_writer.write_pixel(pixel_color, self.samples_per_pixel)?;
             }
 
-            self.print_progress(row, camera);
+            progress_writer.print_progress(row, camera.image_height());
         }
 
-        stdout.flush()?;
-        self.print_finish(time_start);
         Ok(())
     }
 
@@ -77,25 +63,5 @@ impl Renderer {
         let direction = ray.direction().normalized();
         let lerp_factor = 0.5 * (direction.y + 1.0);
         (1.0 - lerp_factor) * white + lerp_factor * blue
-    }
-
-    fn print_progress(&self, row: u32, camera: &Camera) {
-        let progress = row as f32 / (camera.image_height() - 1) as f32;
-        let lines_remaining = camera.image_height() - (row + 1);
-        let cleaning = "     "; // Needed if the current output line is shorter than the line that gets overwritten
-        eprint!(
-            "\rProgress: {:.2} % (scanlines remaining: {}){}",
-            progress * 100.0,
-            lines_remaining,
-            cleaning
-        );
-    }
-
-    fn print_finish(&self, time_start: Instant) {
-        let duration = time_start.elapsed();
-        let seconds = duration.as_secs();
-        let minutes = seconds / 60;
-        let rest_seconds = seconds % 60;
-        eprintln!("\nFinished after {:02}m{:02}s", minutes, rest_seconds);
     }
 }
